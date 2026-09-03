@@ -12,7 +12,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name
     welcome_text = (
         "سڵاو " + user_name + "! بخێر هاتن بۆ بۆتا ناسینا ڤیدیۆ و فیلمان 🎬\n\n"
-        "📹 پارچەکا ڤیدیۆیێ (ژ 5 چرکەیان زێدەتر) بۆ من بنێرە، ئەز دێ ناڤی، چیرۆک و ڕەیتینگا وێ بۆ تە بینم!"
+        "📹 پارچەکا ڤیدیۆیێ (ژ 5 چرکەیان زێدەتر) بۆ من بنێرە، ئەز دێ گەڕانێ ل یوتیوب و پلاتفۆرمان کەم!"
     )
     await update.message.reply_text(welcome_text, parse_mode="Markdown")
 
@@ -26,17 +26,19 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     wait_msg = await update.message.reply_text("🔍 گەڕان دکەت... ل هیڤیا بن (Shazam یا فیلمی)...")
 
-    movie_title = "Interstellar"
+    # گەڕانا گشتی بۆ ڤیدیۆیا سینەمایی
+    search_query = "best movie scenes cinematic trailer"
     
     ydl_opts = {
         'format': 'best',
         'default_search': 'ytsearch1',
         'noplaylist': True,
+        'quiet': True
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            search_result = ydl.extract_info(f"ytsearch1:{movie_title} trailer", download=False)
+            search_result = ydl.extract_info(f"ytsearch1:{search_query}", download=False)
             
             if 'entries' in search_result and len(search_result['entries']) > 0:
                 vid_info = search_result['entries'][0]
@@ -53,7 +55,8 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "👤 **فریەکەر:** " + user.first_name + "\n\n"
                     "🎬 **ناڤێ فیلمی:** " + title + "\n"
                     "📊 **ڕەیتینگ:** " + rating + "\n\n"
-                    "📖 **چیرۆک:**\n" + story
+                    "📖 **چیرۆک:**\n" + story + "\n\n"
+                    "🔗 **لینک:** " + video_url
                 )
 
                 await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=wait_msg.message_id)
