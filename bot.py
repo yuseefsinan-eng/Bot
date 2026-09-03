@@ -3,7 +3,10 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, CommandHandler, filters
 import yt_dlp
 
-TOKEN = os.getenv("8904577045:AAFAz1NPcpoP7RzDWx8cyPu_eh82hxY00Lg")
+# زانیاریێن بۆتی و API یێن تە
+TOKEN = "8904577045:AAFAz1NPcpoP7RzDWx8cyPu_eh82hxY00Lg"
+API_ID = 34584240
+API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name
@@ -69,10 +72,6 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
-    if not TOKEN:
-        print("❌ هەڵە: Token یا بۆتی نەهاتیە دانان!")
-        return
-
     application = ApplicationBuilder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
