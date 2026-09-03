@@ -4,15 +4,14 @@ from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, Comma
 import yt_dlp
 
 TOKEN = os.getenv("8904577045:AAFAz1NPcpoP7RzDWx8cyPu_eh82hxY00Lg")
-OWNER_USERNAME = "@YUSEEF_SURCHI"  # یوزرنەڤیسا تە ل ڤێرە هاتە جێگیرکرن
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.effective_user.first_name
-    await update.message.reply_text(
-        f"سڵاو {user_name}! بخێر هاتن بۆ بۆتا ناسینا ڤیدیۆ و فیلمان 🎬\n\n"
-        f"👑 **خودانێ بۆتی:** {@YUSEEF_SURCHI}\n\n"
+    welcome_text = (
+        "سڵاو " + user_name + "! بخێر هاتن بۆ بۆتا ناسینا ڤیدیۆ و فیلمان 🎬\n\n"
         "📹 پارچەکا ڤیدیۆیێ (ژ 5 چرکەیان زێدەتر) بۆ من بنێرە، ئەز دێ ناڤی، چیرۆک و ڕەیتینگا وێ بۆ تە بینم!"
     )
+    await update.message.reply_text(welcome_text, parse_mode="Markdown")
 
 async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     video = update.message.video
@@ -48,15 +47,14 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup = InlineKeyboardMarkup(keyboard)
 
                 response_text = (
-                    f"👤 **فریەکەر:** {user.first_name}\n"
-                    f"👑 **خودانێ بۆتی:** {@YUSEEF_SURCHI}\n\n"
-                    f"🎬 **ناڤێ فیلمی:** {title}\n"
-                    f"📊 **ڕەیتینگ:** {rating}\n\n"
-                    f"📖 **چیرۆک:**\n{story}"
+                    "👤 **فریەکەر:** " + user.first_name + "\n\n"
+                    "🎬 **ناڤێ فیلمی:** " + title + "\n"
+                    "📊 **ڕەیتینگ:** " + rating + "\n\n"
+                    "📖 **چیرۆک:**\n" + story
                 )
 
                 await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=wait_msg.message_id)
-                await update.message.reply_text(response_text, reply_markup=reply_markup)
+                await update.message.reply_text(response_text, reply_markup=reply_markup, parse_mode="Markdown")
             else:
                 await context.bot.edit_message_text(
                     chat_id=update.effective_chat.id, 
@@ -70,9 +68,6 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text="⚠️ خەلەیەک چێبوو د پرۆسێسا گەڕانێ دا."
         )
 
-async def owner_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(f"👑 خودان و دروستکەرێ ڤی بۆتی ئەڤە یە: {OWNER_USERNAME}")
-
 def main():
     if not TOKEN:
         print("❌ هەڵە: Token یا بۆتی نەهاتیە دانان!")
@@ -81,12 +76,10 @@ def main():
     application = ApplicationBuilder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("owner", owner_command))
     application.add_handler(MessageHandler(filters.VIDEO & (~filters.COMMAND), handle_video))
 
-    print(f"بۆت یێ کاردکەت... خودان: {@YUSEEF_SURCHI}")
+    print("بۆت یێ کاردکەت...")
     application.run_polling()
 
 if __name__ == '__main__':
     main()
-
