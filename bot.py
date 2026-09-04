@@ -1,6 +1,7 @@
 import os
 import logging
 import datetime
+import subprocess
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -20,6 +21,7 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 users_db = {}
 admin_state = {}
+active_user_bots = {} # بۆ ڕاگرتنا پرۆسەیێن بۆتێن بەکارهێنەران
 
 def get_user(user_id, user=None):
     if user_id not in users_db:
@@ -28,7 +30,8 @@ def get_user(user_id, user=None):
             "expire_date": None, 
             "lifetime": False,
             "first_name": user.first_name if user else "نەدیار",
-            "username": user.username if user else None
+            "username": user.username if user else None,
+            "bot_token": None
         }
     elif user:
         if user.first_name:
@@ -64,13 +67,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• **ایدی:** `{user.id}`\n"
         f"• **💰 بیلانس:** `{bal}` دینار\n"
         f"• **⏳ بەشداری:** {status}\n\n"
-        f"🤖 بۆ کارپێکرنا بۆتی (Run)، پێدڤییە بەشدارییێ بکڕی!"
+        f"🤖 بۆتێ پارەیی یێ تایبەت ب کارپێکرنا بۆتان!"
     )
     
     keyboard = [
         [InlineKeyboardButton("🛒 کڕینا بەشدارییێ (Plans)", callback_data="buy_plans")],
         [InlineKeyboardButton("💳 کڕینا بیلانس (Buy Balance)", url="https://t.me/YUSEEF_SURCHI")],
-        [InlineKeyboardButton("🚀 کارپێکرن و فایل (Run Bot)", callback_data="run_bot")],
+        [InlineKeyboardButton("🚀 کارپێکرنا بۆتا خۆ (Run Bot)", callback_data="run_bot_menu")],
     ]
     
     if user.id == OWNER_ID:
@@ -100,7 +103,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("⬅️ ڤەگەر", callback_data="back_to_profile")]
         ]
         await query.edit_message_text(
-            "🛒 **هەلبژارتنا پلانێ**\n\nتکایە ماوەیێ خوە هەلبژێرە بۆ کارپێکرنا بۆتی:",
+            "🛒 **هەلبژارتنا پلانێ (Paid Bot Plans)**\n\nتکایە ماوەیێ خوە هەلبژێرە:",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="Markdown"
         )
@@ -135,25 +138,39 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer("✅ بەشدارییا تە ب سەرکەفتیانە هاتە کڕین!", show_alert=True)
             await start(update, context)
         else:
-            await query.answer("❌ بیلانسێ تە تێرا ناکەت! تکایە بیلانس بکڕە.", show_alert=True)
+            await query.answer("❌ بیلانسێ تە تێرا ناکەت! تکایە ل دەف خودانی بیلانس بکڕە.", show_alert=True)
 
-    elif query.data == "run_bot":
+    elif query.data == "run_bot_menu":
         if not is_active(user.id):
             keyboard = [[InlineKeyboardButton("⬅️ ڤەگەر", callback_data="back_to_profile")]]
             await query.edit_message_text(
-                "❌ **تۆ نەشێی بۆتی کار پێ بکەی!**\n\nپێدڤییە بەشدارییێ بکڕی دا کو بشێی بۆتی (Run) بکەی و فایلان کۆنترۆل بکەی.",
+                "❌ **تۆ نەشێی بۆتی کار پێ بکەی!**\n\nپێدڤییە بەشدارییێ بکڕی (Paid Bot) دا کو بشێی بۆتا خۆ Run بکەی.",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="Markdown"
             )
             return
             
-        keyboard = [[InlineKeyboardButton("⬅️ ڤەگەر بۆ پروفایلی", callback_data="back_to_profile")]]
+        context.user_data["waiting_for_bot_token"] = True
+        keyboard = [
+            [InlineKeyboardButton("⏹️ ڕاگرتنا بۆتا من", callback_data="stop_my_bot")],
+            [InlineKeyboardButton("⬅️ ڤەگەر بۆ پروفایلی", callback_data="back_to_profile")]
+        ]
         await query.edit_message_text(
-            "🚀 **بەڕێوەبرن و کارپێکرن (Run Bot)**\n\n"
-            "✅ تو یێ ڕێپێدراوی!\n\n"
-            "• بۆت یێ ئامادەیە و فایل ب سەرکەفتیانە دێ هێنە کارپێکرن.",
-            reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown"
+            "🚀 **کارپێکرنا بۆتا تە (Run Your Bot)**\n\n"
+            "• فەرموو **Bot Token** ێ خۆ ل ڤێرە بنڤیسە و بۆ من بنێرە دا بۆتا تە ڕاستەوخۆ بهێتە کارپێکرن!",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode="Markdown"
         )
+        
+    elif query.data == "stop_my_bot":
+        if user.id in active_user_bots:
+            active_user_bots[user.id].terminate()
+            del active_user_bots[user.id]
+            user_data["bot_token"] = None
+            await query.answer("✅ بۆتا تە هاتە ڕاگرتن!", show_alert=True)
+        else:
+            await query.answer("⚠️ چ بۆتەک ژ لایێ تە ڤە کار ناکەت.", show_alert=True)
+        await start(update, context)
         
     elif query.data == "cc_panel":
         if user.id != OWNER_ID:
@@ -169,10 +186,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(
             "⚙️ **CC Panel - کۆنترۆلا بیلانسێ**\n\n"
-            "• سنۆر: هەر زێدەکرنەک یا کێمکرنەک ژ **10,000,000** ناهێتە قەبوولکرن د ئێک جار دا.\n\n"
             "`USER_ID +5000` (بۆ زێدەکرنێ)\n"
             "`USER_ID -2000` (بۆ کێمکرنێ)\n\n"
-            "فەرموو فەرمانێ بنڤیسە یان لستا 15 کەسێن یەکەم هەلبژێرە:",
+            "فەرموو فەرمانێ بنڤیسە یان لستا 15 کەسان هەلبژێرە:",
             reply_markup=reply_markup,
             parse_mode="Markdown"
         )
@@ -181,33 +197,51 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if user.id != OWNER_ID:
             return
             
-        # ڕیزکرنا بەکارهێنەران ل گورەی بیلانسێ وان (ژ یێ مەزن بۆ یێ بچووک)
         sorted_users = sorted(users_db.items(), key=lambda x: x[1]["balance"], reverse=True)[:15]
-        
         list_text = "📊 **لستا 15 کەسێن خودان بیلانس یێن پێشەنگ (Top 15):**\n\n"
         if not sorted_users:
             list_text += "هیچ بەکارهێنەرەک هێشتا تۆمار نەکرییە."
         else:
             for idx, (uid, udata) in enumerate(sorted_users, 1):
                 uname = f"@{udata['username']}" if udata['username'] else "نەهاتییە دانان"
-                list_text += (
-                    f"{idx}. **{udata['first_name']}**\n"
-                    f"   • یوزرنەیم: {uname}\n"
-                    f"   • ایدی: `{uid}`\n"
-                    f"   • بیلانس: `{udata['balance']}` دینار\n\n"
-                )
+                list_text += f"{idx}. **{udata['first_name']}** | {uname} | ایدی: `{uid}` | بیلانس: `{udata['balance']}`\n"
                 
         keyboard = [[InlineKeyboardButton("⬅️ ڤەگەر بۆ CC Panel", callback_data="cc_panel")]]
         await query.edit_message_text(list_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
         
     elif query.data == "cancel_admin" or query.data == "refresh" or query.data == "back_to_profile":
         if user.id in admin_state: del admin_state[user.id]
+        if "waiting_for_bot_token" in context.user_data: del context.user_data["waiting_for_bot_token"]
         await start(update, context)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     text = update.message.text
     
+    # ئەگەر بەکارهێنەر تەکەنێ بۆتا خۆ نڤیسی بیت
+    if context.user_data.get("waiting_for_bot_token"):
+        if not is_active(user.id):
+            await update.message.reply_text("❌ بەشدارییا تە ب دوماهی هاتییە!")
+            return
+            
+        bot_token = text.strip()
+        user_data = get_user(user.id, user)
+        user_data["bot_token"] = bot_token
+        
+        # ئەگەر بۆتەک پێشتر کار بکەت، ڕادوەستینین
+        if user.id in active_user_bots:
+            active_user_bots[user.id].terminate()
+            
+        # کارپێکرنا فایلا دووەم (user_bot.py) ب ڕێکا subprocess
+        process = subprocess.Popen(["python", "user_bot.py", bot_token])
+        active_user_bots[user.id] = process
+        
+        del context.user_data["waiting_for_bot_token"]
+        await update.message.reply_text("✅ **بۆتا تە ب سەرکەفتیانە هاتە کارپێکرن (Run) ل سەر سێرڤەری!**", parse_mode="Markdown")
+        await start(update, context)
+        return
+
+    # پشکنینا CC Panel بۆ خودانی
     if user.id == OWNER_ID and admin_state.get(user.id) == "waiting_for_balance_input":
         try:
             parts = text.strip().split()
@@ -217,9 +251,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 target_data = get_user(target_user_id)
                 
                 amount = float(action_value.replace("+", "").replace("-", ""))
-                
                 if amount > 10000000:
-                    await update.message.reply_text("❌ نەخێر! تو نەشێی ژ **10,000,000** زێدەتر د ئێک جار دا فرێ بکەی یان کێم بکەی.", parse_mode="Markdown")
+                    await update.message.reply_text("❌ ژ 10,000,000 زێدەتر ناهێتە قەبوولکرن.")
                     return
 
                 if "-" in action_value:
@@ -233,7 +266,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(f"{msg}\n• **ایدی:** `{target_user_id}`\n• **بیلانسێ نوو:** `{target_data['balance']}`", parse_mode="Markdown")
                 await start(update, context)
             else:
-                await update.message.reply_text("❌ هەڵەیە! نموونە: `7643191802 +5000`")
+                await update.message.reply_text("❌ شێواز هەڵەیە! نموونە: `7643191802 +5000`")
         except ValueError:
             await update.message.reply_text("❌ ایدی یان بیلانس نە دروستە.")
 
@@ -242,7 +275,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("بۆت کار دکەت...")
+    print("بۆتا سەرەکی کار دکەت...")
     application.run_polling()
 
 if __name__ == "__main__":
