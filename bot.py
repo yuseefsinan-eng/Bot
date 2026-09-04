@@ -21,7 +21,7 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 users_db = {}
 admin_state = {}
-active_user_bots = {} # بۆ ڕاگرتنا پرۆسەیێن بۆتێن بەکارهێنەران
+active_user_bots = {}
 
 def get_user(user_id, user=None):
     if user_id not in users_db:
@@ -218,7 +218,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     text = update.message.text
     
-    # ئەگەر بەکارهێنەر تەکەنێ بۆتا خۆ نڤیسی بیت
     if context.user_data.get("waiting_for_bot_token"):
         if not is_active(user.id):
             await update.message.reply_text("❌ بەشدارییا تە ب دوماهی هاتییە!")
@@ -228,11 +227,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_data = get_user(user.id, user)
         user_data["bot_token"] = bot_token
         
-        # ئەگەر بۆتەک پێشتر کار بکەت، ڕادوەستینین
         if user.id in active_user_bots:
             active_user_bots[user.id].terminate()
             
-        # کارپێکرنا فایلا دووەم (user_bot.py) ب ڕێکا subprocess
         process = subprocess.Popen(["python", "user_bot.py", bot_token])
         active_user_bots[user.id] = process
         
@@ -241,7 +238,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await start(update, context)
         return
 
-    # پشکنینا CC Panel بۆ خودانی
     if user.id == OWNER_ID and admin_state.get(user.id) == "waiting_for_balance_input":
         try:
             parts = text.strip().split()
@@ -280,6 +276,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
