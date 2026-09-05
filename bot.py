@@ -7,14 +7,14 @@ API_ID = 34584240
 API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
 
-# هەردوو ID یێن خودان و ڕێڤەبەر بۆ MX PANEL
 OWNERS = [7643191802, 8038533940]
 
-# Database کاتی (Memory)
 user_balances = {}
-user_languages = {}  # "en", "ckb", "ku"
-user_subscriptions = {}  # user_id: {"plan": name, "expire_time": timestamp}
+user_languages = {}  
+user_subscriptions = {}  
 video_wait_prompt = set()
+mx_waiting_id = set()  # بۆ گرتنا ID یا بکارهێنەری ژ خودانی
+mx_target_users = {}   # حافیزەکراو بۆ ID یا هاتییە نڤیسین
 
 app = Client("yuseef_surchi_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
@@ -22,7 +22,7 @@ def is_owner(user_id):
     return user_id in OWNERS
 
 def get_text(user_id, key):
-    lang = user_languages.get(user_id, "ku") # بنەڕەت بادینییە
+    lang = user_languages.get(user_id, "ku") 
     texts = {
         "ku": {
             "welcome": "👋 سلاڤ و رێز!\nب خێر هاتنی بۆ بۆتا چێکرنا ڤیدیۆیان یا 4K.\nفەرموو زمانێ خۆ هەلبژێرە یان ئێک ژ ڤان ڤالەکان بکاربخە:",
@@ -36,11 +36,9 @@ def get_text(user_id, key):
             "back": "🔙 ڤەگەر",
             "choose_lang": "🌐 زمانێ خۆ هەلبژێرە / Select your language:",
             "lang_changed": "✅ زمان ب سەرکەفتی هاتە گوهۆڕین!",
-            "no_sub": "❌ تە چ پشکداریکردن نینە. لطفەن پشکداریکردنێ چێکە.",
-            "sub_active": "✅ پشکداریکردنا تە یا کارا یە!",
+            "no_sub": "❌ تە چ پشکداریکردن نینە. لطفەن پشکداریکردنێ لە سەرەتا چێکە یان باڵانسا خۆ بگووهۆرە.\n💳 @X_MAM6 | @YUSEEF_SURCHi",
+            "sub_active": "✅ پشکداریکردنا تە یا کارا یە! فەرموو پرۆمپتێ (Prompt) خۆ ب نڤیسە بۆ دروستکرنا ڤیدیۆیا 4K:",
             "days_left": "ڕۆژ ماینە بۆ خلاساربوونێ",
-            "buy_sub_prompt": "⚠️ بۆ çێکرنا ڤیدیۆیان، پێتڤییە ئێک ژ پلەنێن پشکداریکردنێ هەبیت!\n\nنرخێن پشکداریکردنێ:\n1️⃣ هەیڤەک: 5,000 دینار\n2️⃣ 6 هەیڤ: 10,000 دینار\n3️⃣ سالەک: 15,000 دینار\n\n💳 بۆ کرینێ سەرەدانا ڤان هەردوو کاکا بکە:\n• @X_MAM6\n• @YUSEEF_SURCHi",
-            "prompt_req": "✍️ پرۆمپتێ (Prompt) خۆ بنڤیسە (ئەم ب خۆ دێ دگەل ئینگلیزی تێکەلس کەین بۆ کوالێتییا 4K):",
             "video_success": "✅ ڤیدیۆیا تە ب سەرکەفتی هاتە چێکرن ب کوالێتییا 4K!",
             "admin_only": "⚠️ ئەڤ پشکە تنێ بۆ خودان و ڕێڤەبەرا یە!"
         },
@@ -56,11 +54,9 @@ def get_text(user_id, key):
             "back": "🔙 گەڕانەوە",
             "choose_lang": "🌐 زمانەکەت هەڵبژێرە / Select your language:",
             "lang_changed": "✅ زمان بە سەرکەوتوویی گۆڕدرا!",
-            "no_sub": "❌ تۆ هیچ بەشداریکردنت نییە. تکایە پلانێک هەڵبژێرە.",
-            "sub_active": "✅ بەشداریکردنەکەت چالاکە!",
+            "no_sub": "❌ تۆ هیچ بەشداریکردنت نییە. تکایە سەرەتا بەشداریکردن بکە.\n💳 @X_MAM6 | @YUSEEF_SURCHi",
+            "sub_active": "✅ بەشداریکردنەکەت چالاکە! تکایە پڕۆمپتەکەت بنووسە بۆ دروستکردنی ڤیدیۆی 4K:",
             "days_left": "ڕۆژ ماون بۆ کۆتایی هاتن",
-            "buy_sub_prompt": "⚠️ بۆ دروستکردنی ڤیدیۆ، پێویستە بەشداریکردنێکت هەبێت!\n\nنرخەکان:\n1️⃣ مانگێک: 5,000 دینار\n2️⃣ 6 مانگ: 10,000 دینار\n3️⃣ ساڵێک: 15,000 دینار\n\n💳 بۆ کڕین سەردانی ئەم دوو کاکە بکە:\n• @X_MAM6\n• @YUSEEF_SURCHi",
-            "prompt_req": "✍️ پڕۆمپتەکەت بنووسە (ئێمە لەگەڵ ئینگلیزی تێکەڵی دەکەین بۆ کوالێتی 4K):",
             "video_success": "✅ ڤیدیۆکەت بە سەرکەوتوویی دروست کرا بە کوالێتی 4K!",
             "admin_only": "⚠️ ئەم بەشە تەنها بۆ خاوەن و بەڕێوەبەرانە!"
         },
@@ -76,11 +72,9 @@ def get_text(user_id, key):
             "back": "🔙 Back",
             "choose_lang": "🌐 Select your language:",
             "lang_changed": "✅ Language changed successfully!",
-            "no_sub": "❌ You don't have an active subscription. Please subscribe first.",
-            "sub_active": "✅ Your subscription is active!",
+            "no_sub": "❌ You don't have an active subscription. Please subscribe first.\n💳 @X_MAM6 | @YUSEEF_SURCHi",
+            "sub_active": "✅ Your subscription is active! Please send your prompt for 4K video:",
             "days_left": "days remaining until expiration",
-            "buy_sub_prompt": "⚠️ To create videos, you need an active subscription!\n\nPrices:\n1️⃣ 1 Month: 5,000 IQD\n2️⃣ 6 Months: 10,000 IQD\n3️⃣ 1 Year: 15,000 IQD\n\n💳 To buy, contact:\n• @X_MAM6\n• @YUSEEF_SURCHi",
-            "prompt_req": "✍️ Enter your prompt (We will merge it with English for 4K quality):",
             "video_success": "✅ Your 4K video was generated successfully!",
             "admin_only": "⚠️ This section is restricted to owners/admins!"
         }
@@ -106,6 +100,9 @@ def start_cmd(client, message: Message):
     user_id = message.from_user.id
     if user_id not in user_balances:
         user_balances[user_id] = 0
+
+    if user_id in mx_waiting_id:
+        mx_waiting_id.remove(user_id)
 
     message.reply_text(get_text(user_id, "welcome"), reply_markup=main_menu_keyboard(user_id))
 
@@ -133,8 +130,7 @@ def callback_handler(client, callback_query: CallbackQuery):
     elif data == "check_balance":
         bal = user_balances.get(user_id, 0)
         msg.edit_text(
-            f"💰 Balance: **{bal}** IQD\n\n"
-            "💳 @X_MAM6\n💳 @YUSEEF_SURCHi",
+            f"💰 Balance: **{bal}** IQD\n\n💳 @X_MAM6\n💳 @YUSEEF_SURCHi",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
 
@@ -147,10 +143,10 @@ def callback_handler(client, callback_query: CallbackQuery):
     elif data == "subscription_plans":
         text = (
             "📦 **Subscription Plans:**\n\n"
-            "1️⃣ 1 Month (5,000 IQD) -> Code: `/sub 1`\n"
-            "2️⃣ 6 Months (10,000 IQD) -> Code: `/sub 6`\n"
-            "3️⃣ 1 Year (15,000 IQD) -> Code: `/sub 12`\n\n"
-            "⚠️ بۆ کرینێ باڵانسا تە پێتڤییە بەحسکرتی هەبیت. (دەمێ پشکداریکردن دەستپێدکەت، باڵانس دبتە 0).\n"
+            "1️⃣ 1 Month (5,000 IQD)\n"
+            "2️⃣ 6 Months (10,000 IQD)\n"
+            "3️⃣ 1 Year (15,000 IQD)\n\n"
+            "⚠️ بۆ کرینێ پشکداریکردنێ، باڵانسا خۆ بدە دەست ڤان هەردوو کاکا:\n"
             "💳 @X_MAM6 | @YUSEEF_SURCHi"
         )
         msg.edit_text(text, reply_markup=InlineKeyboardMarkup([
@@ -170,11 +166,7 @@ def callback_handler(client, callback_query: CallbackQuery):
             callback_query.answer("❌ باڵانسا تە بس نینە! باڵانسا خۆ زێدە بکە.", show_alert=True)
             return
 
-        # کێمکرنا باڵانسی بۆ 0 یان دەرهێنانا مەبلەغی و تێپەڕاندنا باڵانسی بۆ 0
-        user_balances[user_id] -= cost
-        # یان ئەگەر تە دڤێت ڕاستەوخۆ بکەتە 0:
         user_balances[user_id] = 0
-
         expire_time = time.time() + (months * 30 * 86400)
         user_subscriptions[user_id] = {
             "plan": f"{months} Months",
@@ -204,34 +196,111 @@ def callback_handler(client, callback_query: CallbackQuery):
     elif data == "create_video":
         sub = user_subscriptions.get(user_id)
         if not sub or sub["expire_time"] < time.time():
-            msg.edit_text(get_text(user_id, "buy_sub_prompt"), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]]))
+            msg.edit_text(
+                get_text(user_id, "no_sub"),
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("1️⃣ 1 Month (5k)", callback_data="buy_plan_1"),
+                     InlineKeyboardButton("2️⃣ 6 Months (10k)", callback_data="buy_plan_6")],
+                    [InlineKeyboardButton("3️⃣ 1 Year (15k)", callback_data="buy_plan_12")],
+                    [InlineKeyboardButton("🔄 پشت ڕاست بکە (Check Sub)", callback_data="create_video")],
+                    [InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]
+                ])
+            )
             return
 
         video_wait_prompt.add(user_id)
-        msg.edit_text(get_text(user_id, "prompt_req"), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]]))
+        msg.edit_text(
+            get_text(user_id, "sub_active"),
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
+        )
 
     elif data == "mx_panel":
         if not is_owner(user_id):
             callback_query.answer(get_text(user_id, "admin_only"), show_alert=True)
             return
         
+        mx_waiting_id.add(user_id)
         msg.edit_text(
-            "⚙️ **MX PANEL (Owner & Admin)**\n\n"
-            " بۆ زێدەکرنا باڵانسی ب ڕێکا ID:\n"
-            "`/addbal [ID] [ڕێژە]`\n\n"
-            "بۆ نموونە: `/addbal 7643191802 10000`",
+            "⚙️ **MX PANEL (Owner Dashboard)**\n\n"
+            "👤 فەرموو، ژمارا ID یا بکارهێنەری (User ID) ل ڤێرە بنڤیسە دا لیستا باڵانسی بۆتە بهێت:",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
+
+    elif data.startswith("mx_add_"):
+        if not is_owner(user_id):
+            return
+        parts = data.split("_")
+        amount = int(parts[2])
+        target_id = mx_target_users.get(user_id)
+
+        if not target_id:
+            msg.edit_text("⚠️ چ ID هاتە هەلبژێرن! ژ سەرەتا دەستپێبکەڤە.", reply_markup=main_menu_keyboard(user_id))
+            return
+
+        if target_id not in user_balances:
+            user_balances[target_id] = 0
+        
+        user_balances[target_id] += amount
+        
+        # هنارتنا پەیامێ بۆ بکارهێنەری
+        try:
+            client.send_message(
+                target_id,
+                f"✅ ب سەرکەفتی مه‌بلەغەکێ باڵانسی هاتە زێدەکرن بۆ هه‌ژمارا ته‌!\n"
+                f"💰 بڕا زێدەبووی: **{amount}** IQD\n"
+                f"💳 باڵانسا نوو: **{user_balances[target_id]}** IQD"
+            )
+        except Exception:
+            pass
+
+        msg.edit_text(
+            f"✅ **ب سەرکەفتی باڵانس هاتە هنارتن!**\n\n"
+            f"🆔 بۆ ID: `{target_id}`\n"
+            f"💰 بڕا هاتییە زێدەکرن: **{amount}** IQD\n"
+            f"💳 باڵانسا نوو یا بکارهێنەری: **{user_balances[target_id]}** IQD",
+            reply_markup=main_menu_keyboard(user_id)
+        )
+        if user_id in mx_target_users:
+            del mx_target_users[user_id]
 
     elif data == "main_menu":
         if user_id in video_wait_prompt:
             video_wait_prompt.remove(user_id)
+        if user_id in mx_waiting_id:
+            mx_waiting_id.remove(user_id)
         msg.edit_text(get_text(user_id, "welcome"), reply_markup=main_menu_keyboard(user_id))
 
 @app.on_message(filters.text & ~filters.command(["start", "addbal"]))
 def handle_text(client, message: Message):
     user_id = message.from_user.id
     
+    # ئەگەر خودان ل ناڤ MX PANEL بیت و ID نڤیسبت
+    if is_owner(user_id) and user_id in mx_waiting_id:
+        mx_waiting_id.remove(user_id)
+        try:
+            target_id = int(message.text.strip())
+            mx_target_users[user_id] = target_id
+            
+            # دروستکرنا لیستا بووتەمسی (Custom Balance Buttons)
+            buttons = [
+                [InlineKeyboardButton("5,000 IQD", callback_data="mx_add_5000"),
+                 InlineKeyboardButton("10,000 IQD", callback_data="mx_add_10000")],
+                [InlineKeyboardButton("15,000 IQD", callback_data="mx_add_15000"),
+                 InlineKeyboardButton("25,000 IQD", callback_data="mx_add_25000")],
+                [InlineKeyboardButton("50,000 IQD", callback_data="mx_add_50000"),
+                 InlineKeyboardButton("100,000 IQD", callback_data="mx_add_100000")],
+                [InlineKeyboardButton("🔙 ڤەگەر", callback_data="mx_panel")]
+            ]
+            message.reply_text(
+                f"⚙️ **MX PANEL - Custom Balance**\n\n"
+                f"🆔 ID یا هاتییە دیارکرن: `{target_id}`\n"
+                f"💰 فەرموو بڕا باڵانسی هەلبژێرە دا راستەوخۆ بۆ بچێت:",
+                reply_markup=InlineKeyboardMarkup(buttons)
+            )
+        except ValueError:
+            message.reply_text("⚠️ ژ ڕەحمەتا خۆ ID یا دروست ب ژمارە بنڤیسە:", reply_markup=main_menu_keyboard(user_id))
+        return
+
     if user_id in video_wait_prompt:
         video_wait_prompt.remove(user_id)
         prompt = message.text
