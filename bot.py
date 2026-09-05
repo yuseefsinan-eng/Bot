@@ -4,15 +4,15 @@ import json
 import threading
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-import google.generativeai as genai
+from openai import OpenAI
 
 API_ID = 34584240
 API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
 
-# ⚠️ پێدڤییە ل ڤێرە AI Studio API Key یا ڕاستەقینە ب دانی (یا کو ب AIzaSy دەست پێ دکەت)
-GEMINI_API_KEY = "AIzaSy..."  
-genai.configure(api_key=GEMINI_API_KEY)
+# 🔑 کلیلا OpenAI ya تە ل ڤێرە هاتە دانان
+OPENAI_API_KEY = "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"
+client_ai = OpenAI(api_key=OPENAI_API_KEY)
 
 OWNERS = [7643191802, 8038533940]
 DATA_FILE = "ultimate_master_bot_db_v5.json"
@@ -75,7 +75,7 @@ def get_text(user_id, key):
             "no_sub": "❌ تە چ پشکداریکردنەکا کارا نینە!\nلطفەن سەرەتا پشکداریکردنێ چێکە یان باڵانسا خۆ ل دەف ڕێڤەبەرا زێدە بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
             "sub_active": "✅ پشکداریکردنا تە یا کارا یە!\n✍️ فەرموو پرۆمپتێ خۆ بنڤیسە یان وێنەیەکێ ڕێفرنس بۆ ناسینا دەمچەی بنێرە:",
             "days_left": "ڕۆژ ماینە بۆ خلاساربوونێ",
-            "video_success": "🚀 **وەراوا ژێرەکیا دەستکرد (Gemini AI) بۆ پڕۆمپتێ تە:**",
+            "video_success": "🚀 **وەڵاما ژێرەکیا دەستکرد (OpenAI) بۆ پڕۆمپتێ تە:**",
             "admin_only": "⚠️ ئەڤ پشکە تنێ بۆ ڕێڤەبەرا یە!",
             "bal_text": "💰 باڵانسا تەیا نۆکە:",
             "buy_text": "💳 بۆ کرینا باڵانسی یان پشکداریکردنێ، پەیوەندیێ ب ڤان هەردوو کاکا بکە:",
@@ -93,7 +93,7 @@ def get_text(user_id, key):
             "gen_video": "⏳ چاوەڕوانبە... ژێرەکیا دەستکرد مژوولی تشتکرنا وەڵاما تە یە..."
         },
         "ckb": {
-            "welcome": "🔥 **سڵاو و ڕێز بۆ بەڕێزت!**\n\nبەخێر هاتیت بۆ سیستەمی پێشکەوتووی دروستکردنی ڤیدیۆی 4K بە تایبەتمەندی **Facial Consistency**.\nتکایە یەکێک هەڵبژێرە:",
+            "welcome": "🔥 **سڵاو و ڕێز بۆ بەڕێزت!**\n\nبەخێر هاتیت بۆ سیستەمی پێشکەوتووی دروستکردنی ڤیدیۆی 4K.\nتکایە یەکێک هەڵبژێرە:",
             "btn_video": "🎬 دروستکردنی ڤیدیۆی 4K (AI)",
             "btn_bal": "💰 باڵانسم",
             "btn_buy": "💳 کڕینی باڵانس",
@@ -103,12 +103,12 @@ def get_text(user_id, key):
             "mx_title": "⚙️ MX PANEL (تایبەت بە بەڕێوەبەران)",
             "mx_broadcast": "📢 ناردنی ڕیکلام بۆ گشت بەکارهێنەران",
             "back": "🔙 گەڕانەوە بۆ سەرەکی",
-            "choose_lang": "🌐 تکایە زمانەکەت هەڵبژێرە:\n\nSelect your language / اختر لغتك / زمانەکەت هەڵبژێرە:",
+            "choose_lang": "🌐 تکایە زمانەکەت هەڵبژێرە:",
             "lang_changed": "✅ زمان بە سەرکەوتوویی گۆڕدرا بۆ کوردی (سۆرانی)!",
-            "no_sub": "❌ تۆ هیچ بەشداریکردنێکی چالاکت نییە!\nتکایە سەرەتا بەشداریکردن بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
-            "sub_active": "✅ بەشداریکردنەکەت چالاکە!\n✍️ تکایە پڕۆمپتەکەت بنووسە یان وێنەیەک بنێرە:",
+            "no_sub": "❌ تۆ هیچ بەشداریکردنێکی چالاکت نییە!\n💳 @X_MAM6 | @YUSEEF_SURCHi",
+            "sub_active": "✅ بەشداریکردنەکەت چالاکە!\n✍️ تکایە پڕۆمپتەکەت بنووسە:",
             "days_left": "ڕۆژ ماون بۆ کۆتایی هاتن",
-            "video_success": "🚀 **وەڵامی زیرەکی دەستکرد (Gemini AI):**",
+            "video_success": "🚀 **وەڵامی زیرەکی دەستکرد (OpenAI):**",
             "admin_only": "⚠️ ئەم بەشە تەنها بۆ بەڕێوەبەرانە!",
             "bal_text": "💰 باڵانسی ئێستای تۆ:",
             "buy_text": "💳 بۆ کڕینی باڵانس، پەیوەندی بەم کەسانە بکە:",
@@ -122,74 +122,74 @@ def get_text(user_id, key):
             "sub_label": "📦 بەشداریکردن:",
             "no_sub_profile": "❌ بێ بەشداریکردن",
             "lang_label": "🌐 زمان: کوردی (سۆرانی)",
-            "mx_prompt": "⚙️ **MX PANEL - کۆنتڕۆڵی بەڕێوەبەر**\n\n👤 تکایە IDی بەکارهێنەر لێرە بنووسە:",
-            "gen_video": "⏳ چاوەڕوانبە... زیرەکی دەستکرد کار لەسەر داواکارییەکەت دەکات..."
+            "mx_prompt": "⚙️ **MX PANEL**\n\n👤 تکایە IDی بەکارهێنەر لێرە بنووسە:",
+            "gen_video": "⏳ چاوەڕوانبە..."
         },
         "ar": {
-            "welcome": "🔥 **أهلاً بك!**\n\nمرحباً بك في النظام الذكي المربوط بـ Gemini AI.\nيرجى اختيار أحد الخيارات:",
+            "welcome": "🔥 **أهلاً بك!**\n\nيرجى اختيار أحد الخيارات:",
             "btn_video": "🎬 إنشاء فيديو 4K (AI)",
             "btn_bal": "💰 رصيدي",
             "btn_buy": "💳 شراء رصيد",
             "btn_sub": "📦 خطط الاشتراكات",
             "btn_prof": "👤 ملفي الشخصي",
-            "btn_lang": "🌐 تغيير اللغة (Language)",
-            "mx_title": "⚙️ MX PANEL (خاص للمشرفين)",
-            "mx_broadcast": "📢 إرسال إعلان للجميع",
-            "back": "🔙 رجوع للقائمة الرئيسية",
-            "choose_lang": "🌐 يرجى اختيار لغتك المفضلة:\n\nSelect your language / اختر لغتك:",
-            "lang_changed": "✅ تم تغيير اللغة بنجاح إلى العربية!",
-            "no_sub": "❌ ليس لديك اشتراك نشط!\nيرجى الاشتراك أولاً.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
-            "sub_active": "✅ اشتراكك نشط!\n✍️ أرسل الوصف (Prompt) الخاص بك:",
+            "btn_lang": "🌐 تغيير اللغة",
+            "mx_title": "⚙️ MX PANEL",
+            "mx_broadcast": "📢 إرسال إعلان",
+            "back": "🔙 رجوع",
+            "choose_lang": "🌐 اختر لغتك:",
+            "lang_changed": "✅ تم تغيير اللغة!",
+            "no_sub": "❌ ليس لديك اشتراك نشط!",
+            "sub_active": "✅ اشتراكك نشط! أرسل الوصف:",
             "days_left": "أيام متبقية",
-            "video_success": "🚀 **رد الذكاء الاصطناعي (Gemini AI):**",
-            "admin_only": "⚠️ هذا القسم مخصص للمشرفين فقط!",
-            "bal_text": "💰 رصيدك الحالي:",
-            "buy_text": "💳 لشراء رصيد، يرجى التواصل مع:",
-            "sub_plans_title": "📦 **خطط الاشتراكات:**",
-            "sub_1": "1️⃣ شهر واحد (5,000 د.ع)",
+            "video_success": "🚀 **رد الذكاء الاصطناعي (OpenAI):**",
+            "admin_only": "⚠️ للمشرفين فقط!",
+            "bal_text": "💰 رصيدك:",
+            "buy_text": "💳 لشراء رصيد:",
+            "sub_plans_title": "📦 **الاشتراكات:**",
+            "sub_1": "1️⃣ شهر (5,000 د.ع)",
             "sub_6": "2️⃣ 6 أشهر (10,000 د.ع)",
-            "sub_12": "3️⃣ سنة واحدة (15,000 د.ع)",
-            "check_sub": "🔄 التحقق من الاشتراك",
-            "profile_title": "👤 **ملفك الشخصي:**",
-            "id_text": "🆔 المعرف (ID):",
+            "sub_12": "3️⃣ سنة (15,000 د.ع)",
+            "check_sub": "🔄 تحقق",
+            "profile_title": "👤 **ملفك:**",
+            "id_text": "🆔 ID:",
             "sub_label": "📦 الاشتراك:",
             "no_sub_profile": "❌ بدون اشتراك",
             "lang_label": "🌐 اللغة: العربية",
-            "mx_prompt": "⚙️ **MX PANEL - لوحة المشرف**\n\n👤 يرجى إدخال معرف المستخدم (ID) هنا:",
-            "gen_video": "⏳ جاري المعالجة بواسطة الذكاء الاصطناعي..."
+            "mx_prompt": "⚙️ أدخل ID المستخدم:",
+            "gen_video": "⏳ جاري المعالجة..."
         },
         "en": {
-            "welcome": "🔥 **Hello!**\n\nWelcome to the Gemini-powered AI Bot.\nPlease select an option:",
+            "welcome": "🔥 **Hello!**\nPlease select an option:",
             "btn_video": "🎬 Create 4K Video (AI)",
             "btn_bal": "💰 My Balance",
             "btn_buy": "💳 Buy Balance",
             "btn_sub": "📦 Subscription Plans",
             "btn_prof": "👤 My Profile",
             "btn_lang": "🌐 Change Language",
-            "mx_title": "⚙️ MX PANEL (Owner/Admin Only)",
-            "mx_broadcast": "📢 Broadcast Message",
-            "back": "🔙 Back to Main Menu",
-            "choose_lang": "🌐 Please select your language:",
-            "lang_changed": "✅ Language successfully changed to English!",
-            "no_sub": "❌ You don't have an active subscription!\nPlease subscribe first.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
-            "sub_active": "✅ Your subscription is active!\n✍️ Send your prompt:",
+            "mx_title": "⚙️ MX PANEL",
+            "mx_broadcast": "📢 Broadcast",
+            "back": "🔙 Back",
+            "choose_lang": "🌐 Select language:",
+            "lang_changed": "✅ Language changed!",
+            "no_sub": "❌ No active subscription!",
+            "sub_active": "✅ Subscription active! Send prompt:",
             "days_left": "days remaining",
-            "video_success": "🚀 **Gemini AI Response:**",
-            "admin_only": "⚠️ This section is restricted to admins!",
-            "bal_text": "💰 Your current balance:",
-            "buy_text": "💳 To buy balance, contact:",
-            "sub_plans_title": "📦 **Subscription Plans:**",
+            "video_success": "🚀 **OpenAI Response:**",
+            "admin_only": "⚠️ Admins only!",
+            "bal_text": "💰 Balance:",
+            "buy_text": "💳 Contact:",
+            "sub_plans_title": "📦 **Plans:**",
             "sub_1": "1️⃣ 1 Month (5,000 IQD)",
             "sub_6": "2️⃣ 6 Months (10,000 IQD)",
             "sub_12": "3️⃣ 1 Year (15,000 IQD)",
-            "check_sub": "🔄 Check Subscription",
-            "profile_title": "👤 **My Profile:**",
-            "id_text": "🆔 User ID:",
+            "check_sub": "🔄 Check",
+            "profile_title": "👤 **Profile:**",
+            "id_text": "🆔 ID:",
             "sub_label": "📦 Subscription:",
-            "no_sub_profile": "❌ No active subscription",
+            "no_sub_profile": "❌ No subscription",
             "lang_label": "🌐 Language: English",
-            "mx_prompt": "⚙️ **MX PANEL - Admin Control**\n\n👤 Please enter User ID:",
-            "gen_video": "⏳ Processing via Gemini AI..."
+            "mx_prompt": "⚙️ Enter User ID:",
+            "gen_video": "⏳ Processing..."
         }
     }
     return texts.get(lang, texts["ku"]).get(key, key)
@@ -288,11 +288,10 @@ def callback_handler(client, callback_query: CallbackQuery):
         current_bal = user_balances.get(user_id, 0)
 
         if current_bal < cost:
-            callback_query.answer("❌ باڵانسا تە بەس نینە! / رصيدك غير كافي!", show_alert=True)
+            callback_query.answer("❌ باڵانسا تە بەس نینە!", show_alert=True)
             return
 
         user_balances[user_id] -= cost
-        
         current_time = time.time()
         existing_sub = user_subscriptions.get(user_id)
         
@@ -356,7 +355,6 @@ def callback_handler(client, callback_query: CallbackQuery):
         if not is_owner(user_id):
             callback_query.answer(get_text(user_id, "admin_only"), show_alert=True)
             return
-        
         mx_waiting_id.add(user_id)
         msg.edit_text(
             get_text(user_id, "mx_prompt"),
@@ -369,7 +367,7 @@ def callback_handler(client, callback_query: CallbackQuery):
             return
         broadcast_waiting_id.add(user_id)
         msg.edit_text(
-            "📢 **هنارتنا ڕیکلام / Broadcast**\n\nفەرموو ئەو پەیام، وێنە یان ڤیدیۆیا تە دڤێت بۆ هەمی بکارهێنەران ب لەز بنێری لێرە بنێرە:",
+            "📢 **هنارتنا ڕیکلام / Broadcast**\n\nفەرموو ئەو پەیامە لێرە بنێرە:",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
 
@@ -391,25 +389,15 @@ def callback_handler(client, callback_query: CallbackQuery):
         save_data()
         
         try:
-            notif_msg = client.send_message(
+            client.send_message(
                 target_id, 
-                f"🎉 **پیرۆزە! باڵانس بۆ هەژمارا تە هاتە زیادکرن.**\n💰 بڕێ زێدەبووی: `+{amount} د.ع`\n💳 باڵانسا نۆکە: `{user_balances[target_id]} د.ع`"
+                f"🎉 **پیرۆزە! باڵانس هاتە زیادکرن.**\n💰 `+{amount} د.ع`\n💳 باڵانسا نۆکە: `{user_balances[target_id]} د.ع`"
             )
-            def delete_later():
-                time.sleep(8)
-                try:
-                    client.delete_messages(target_id, notif_msg.id)
-                except Exception:
-                    pass
-            threading.Thread(target=delete_later, daemon=True).start()
         except Exception:
             pass
 
         msg.edit_text(
-            f"✅ **باڵانس ب سەرکەفتی هاتە هنارتن!**\n\n"
-            f"🆔 ID: `{target_id}`\n"
-            f"💰 باڵانسا نوو: `{user_balances[target_id]} د.ع`\n"
-            f"✨ (پەیاما ئاگاداریێ بۆ چاتێ وی هاتە هنارتن و دێ پشتی 8 چرکەیان ژناڤچیت)",
+            f"✅ **باڵانس ب سەرکەفتی هاتە هنارتن!**\n🆔 ID: `{target_id}`\n💰 نوو: `{user_balances[target_id]} د.ع`",
             reply_markup=main_menu_keyboard(user_id)
         )
         if user_id in mx_target_users:
@@ -438,37 +426,21 @@ def handle_text(client, message: Message):
     
     if is_owner(user_id) and user_id in broadcast_waiting_id:
         broadcast_waiting_id.remove(user_id)
-        
         def send_fast_broadcast():
-            success = 0
-            failed = 0
             for uid in all_users:
                 try:
                     message.copy(uid)
-                    success += 1
                 except Exception:
-                    failed += 1
-            try:
-                client.send_message(
-                    user_id,
-                    f"✅ **ڕیکلام ب لەز و ب سەرکەفتی بۆ گشت کەسان هاتە هنارتن!**\n\n📤 سەرکەفتی: `{success}`\n❌ نەگەهشتە: `{failed}`",
-                    reply_markup=main_menu_keyboard(user_id)
-                )
-            except Exception:
-                pass
-
+                    pass
         threading.Thread(target=send_fast_broadcast, daemon=True).start()
-        message.reply_text("⚡ **ڕیکلام د مەژیێ پشتپەردە دا دەست ب هنارتنێ کر (زیکا زیکا دچیت)...**", reply_markup=main_menu_keyboard(user_id))
+        message.reply_text("⚡ **ڕیکلام دەست ب هنارتنێ کر...**", reply_markup=main_menu_keyboard(user_id))
         return
 
     if is_owner(user_id) and user_id in mx_waiting_id:
         mx_waiting_id.remove(user_id)
-        text_input = message.text.strip()
-        
         try:
-            target_id = int(text_input)
+            target_id = int(message.text.strip())
             mx_target_users[user_id] = target_id
-            
             t_info = user_info.get(target_id, {"username": "نەدیار", "nickname": "نەدیار"})
             t_bal = user_balances.get(target_id, 0)
             
@@ -481,81 +453,49 @@ def handle_text(client, message: Message):
                  InlineKeyboardButton("100,000 د.ع", callback_data="mx_add_100000")],
                 [InlineKeyboardButton(get_text(user_id, "back"), callback_data="mx_panel")]
             ]
-            
             message.reply_text(
-                f"💎 **MX PANEL - ناسناما دیتنا باوەڕپێکری** 💎\n\n"
-                f"👤 **ناڤ (Nickname):** `{t_info['nickname']}`\n"
-                f"🔗 **یۆزەرنەم (Username):** `{t_info['username']}`\n"
-                f"🆔 **کۆدێ ناسنامێ (ID):** `{target_id}`\n"
-                f"💰 **باڵانسا نۆکە:** `{t_bal} د.ع`\n\n"
-                f"🟢 **پشتی ڕاستکردنێ:** ئەڤە کەسەکێ ڕاستەقینەیە و د بۆتی دا تۆمارکراوە.\n\n"
-                f"👇 **فەرموو بڕێ باڵانسا تە ڤەدگۆڕێ هەلبژێرە:**",
+                f"💎 **MX PANEL**\n👤 ناڤ: `{t_info['nickname']}`\n🆔 ID: `{target_id}`\n💰 باڵانس: `{t_bal} د.ع`\n\nبڕێ باڵانسی هەلبژێرە:",
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
         except ValueError:
-            message.reply_text("⚠️ ژمارا ID یا هاتییە نڤیسین هەڵە یە!", reply_markup=main_menu_keyboard(user_id))
+            message.reply_text("⚠️ ژمارا ID هەڵە یە!", reply_markup=main_menu_keyboard(user_id))
         return
 
     if user_id in video_wait_prompt:
         video_wait_prompt.remove(user_id)
         prompt = message.text
-        
         sent = message.reply_text(get_text(user_id, "gen_video"))
         
         user_lang = user_languages.get(user_id, "ku")
         lang_instructions = {
-            "ku": "وەڵاما خۆ ب تنێ ب زمانێ کوردی (بادینی) بنڤیسە، چ زمانێن دی تێکەڵ نەکە.",
-            "ckb": "وەڵامی خۆت تەنها بە زمانی کوردی (سۆرانی) بنووسە، هیچ زمانێکی تر بەکار مەهێنە.",
-            "ar": "قم بالرد باللغة العربية حصراً، ولا تستخدم أي لغة أخرى.",
-            "en": "Reply strictly in English only, do not mix any other language."
+            "ku": "وەڵاما خۆ ب تنێ ب زمانێ کوردی (بادینی) بنڤیسە.",
+            "ckb": "وەڵامی خۆت تەنها بە زمانی کوردی (سۆرانی) بنووسە.",
+            "ar": "قم بالرد باللغة العربية حصراً.",
+            "en": "Reply strictly in English only."
         }
-        system_instruction = lang_instructions.get(user_lang, lang_instructions["ku"])
+        sys_msg = lang_instructions.get(user_lang, lang_instructions["ku"])
 
-        def call_gemini():
+        def call_openai():
             try:
-                model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
-                    system_instruction=system_instruction
+                response = client_ai.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": sys_msg},
+                        {"role": "user", "content": prompt}
+                    ]
                 )
-                response = model.generate_content(prompt)
-                ai_reply = response.text if response and response.text else "⚠️ چ وەڵام نەهات."
-                
-                final_text = (
-                    f"{get_text(user_id, 'video_success')}\n\n"
-                    f"💬 **پڕۆمپت:** `{prompt}`\n\n"
-                    f"{ai_reply}"
-                )
+                ai_reply = response.choices[0].message.content if response.choices else "⚠️ چ وەڵام نەهات."
+                final_text = f"{get_text(user_id, 'video_success')}\n\n💬 **پڕۆمپت:** `{prompt}`\n\n{ai_reply}"
                 sent.edit_text(final_text, reply_markup=main_menu_keyboard(user_id))
             except Exception as e:
-                sent.edit_text(f"❌ شاشەیەک چێبوو د پەیوەندیێ ب AI ڤە:\n`{str(e)}`", reply_markup=main_menu_keyboard(user_id))
+                sent.edit_text(f"❌ شاشەیەک چێبوو:\n`{str(e)}`", reply_markup=main_menu_keyboard(user_id))
 
-        threading.Thread(target=call_gemini, daemon=True).start()
+        threading.Thread(target=call_openai, daemon=True).start()
 
 @app.on_message(filters.command("stats"))
 def stats_cmd(client, message: Message):
     if not is_owner(message.from_user.id):
         return
-    total_u = len(all_users)
-    total_subs = len(user_subscriptions)
-    message.reply_text(f"📊 **ئامارێن بۆتێ:**\n\n👥 هەمی بکارهێنەر: `{total_u}`\n📦 پشکدارێن کارا: `{total_subs}`")
-
-@app.on_message(filters.command("addbal"))
-def add_balance_cmd(client, message: Message):
-    user_id = message.from_user.id
-    if not is_owner(user_id):
-        return
-    args = message.text.split()
-    if len(args) < 3:
-        return
-    try:
-        target_id = int(args[1])
-        amount = int(args[2])
-        if target_id not in user_balances:
-            user_balances[target_id] = 0
-        user_balances[target_id] += amount
-        save_data()
-        message.reply_text(f"✅ Added {amount} IQD to ID: {target_id}")
-    except ValueError:
-        pass
+    message.reply_text(f"📊 **ئامار:**\n👥 بکارهێنەر: `{len(all_users)}`\n📦 پشکدار: `{len(user_subscriptions)}`")
 
 app.run()
