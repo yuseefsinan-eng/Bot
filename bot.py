@@ -10,7 +10,8 @@ API_ID = 34584240
 API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
 
-GEMINI_API_KEY = "AQ.Ab8RN6KEiH7KRmoJf14L4Ww9yc1OwpKhp4kWlW1oBZnSSunAwQ"
+# ⚠️ پێدڤییە ل ڤێرە AI Studio API Key یا ڕاستەقینە ب دانی (یا کو ب AIzaSy دەست پێ دکەت)
+GEMINI_API_KEY = "AIzaSy..."  
 genai.configure(api_key=GEMINI_API_KEY)
 
 OWNERS = [7643191802, 8038533940]
@@ -501,7 +502,6 @@ def handle_text(client, message: Message):
         
         sent = message.reply_text(get_text(user_id, "gen_video"))
         
-        # دەستنیشانکرنا زمانێ بکارهێنەری دا AI تنێ ب هەمان زمان وەڵام بدەت
         user_lang = user_languages.get(user_id, "ku")
         lang_instructions = {
             "ku": "وەڵاما خۆ ب تنێ ب زمانێ کوردی (بادینی) بنڤیسە، چ زمانێن دی تێکەڵ نەکە.",
@@ -513,7 +513,6 @@ def handle_text(client, message: Message):
 
         def call_gemini():
             try:
-                # بکاربێنە model-ەکێ کو فەرمانێن سیستمێ بشتراست بکەت
                 model = genai.GenerativeModel(
                     model_name="gemini-1.5-flash",
                     system_instruction=system_instruction
