@@ -499,3 +499,9 @@ def stats_cmd(client, message: Message):
     message.reply_text(f"📊 **ئامار:**\n👥 بکارهێنەر: `{len(all_users)}`\n📦 پشکدار: `{len(user_subscriptions)}`")
 
 app.run()
+
+
+
+
+
+
