@@ -10,7 +10,7 @@ BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
 OWNERS = [7643191802, 8038533940]
 
 user_balances = {}
-user_languages = {}  # بۆ حافیزکرنا زمانێ بکارهێنەری (ku, ckb, en)
+user_languages = {}  
 user_subscriptions = {}  
 video_wait_prompt = set()
 mx_waiting_id = set()  
@@ -22,7 +22,7 @@ def is_owner(user_id):
     return user_id in OWNERS
 
 def get_text(user_id, key):
-    lang = user_languages.get(user_id, "ku") # بنەڕەت بادینییە
+    lang = user_languages.get(user_id, "ku") 
     texts = {
         "ku": {
             "welcome": "✨ **سلاڤ و ڕێز!**\n\nب خێر هاتنی بۆ جیهانا پێشکەفتیا چێکرنا ڤیدیۆیان یا 4K ب هێزا AI.\nفەرموو ئێك ژ ڤان ڤالەکان ژ خوارێ هەلبژێرە:",
@@ -40,7 +40,21 @@ def get_text(user_id, key):
             "sub_active": "✅ پشکداریکردنا تە یا کارا یە!\nفەرموو پرۆمپتێ (Prompt) خۆ ب بادینی بنڤیسە بۆ دروستکرنا ڤیدیۆیا 4K:",
             "days_left": "ڕۆژ ماینە بۆ خلاساربوونێ",
             "video_success": "✅ **ڤیدیۆیا تە ب سەرکەفتی هاتە دروستکرن!**",
-            "admin_only": "⚠️ ئەڤ پشکە تنێ بۆ خودان و ڕێڤەبەرا یە!"
+            "admin_only": "⚠️ ئەڤ پشکە تنێ بۆ خودان و ڕێڤەبەرا یە!",
+            "bal_text": "💰 باڵانسا تەیا نۆکە:",
+            "buy_text": "💳 بۆ كرینا باڵانسی یان پشکداریکردنێ، لطفەن سەرەدانا ڤان هەردوو یوزرنەما بکە:",
+            "sub_plans_title": "📦 **پلەنێن بەشدارییا ڤیدیۆیان (4K):**",
+            "sub_1": "1️⃣ هەیڤەک (5k)",
+            "sub_6": "2️⃣ 6 هەیڤ (10k)",
+            "sub_12": "3️⃣ سالەک (15k)",
+            "check_sub": "🔄 پشت ڕاست بکە",
+            "profile_title": "👤 **پروفایلا من:**",
+            "id_text": "🆔 ناسنامە (ID):",
+            "sub_label": "📦 پشکداریکردن:",
+            "no_sub_profile": "❌ چ پشکداریکردن نینە",
+            "lang_label": "🌐 زمان: کوردی (بادینی)",
+            "mx_prompt": "⚙️ **MX PANEL (ڕێڤەبەر)**\n\n👤 فەرموو، ژمارا ID یا بکارهێنەری ل ڤێرە بنڤیسە دا لیستا باڵانسی بۆتە بهێت:",
+            "gen_video": "⏳ تشتەکی بڕاوە... ڤیدیۆیا تە یا 4K بەرهەم دهێت..."
         },
         "ckb": {
             "welcome": "✨ **سڵاو و ڕێز!**\n\nبەخێر هاتیت بۆ جیهانی پێشکەوتووی دروستکردنی ڤیدیۆی 4K بە هێزی AI.\nتکایە یەکێک لەم بژاردانەی خوارەوە هەڵبژێرە:",
@@ -58,7 +72,21 @@ def get_text(user_id, key):
             "sub_active": "✅ بەشداریکردنەکەت چالاکە!\nتکایە پڕۆمپتەکەت بنووسە بۆ دروستکردنی ڤیدیۆی 4K:",
             "days_left": "ڕۆژ ماون بۆ کۆتایی هاتن",
             "video_success": "✅ **ڤیدیۆکەت بە سەرکەوتوویی دروست کرا!**",
-            "admin_only": "⚠️ ئەم بەشە تەنها بۆ خاوەن و بەڕێوەبەرانە!"
+            "admin_only": "⚠️ ئەم بەشە تەنها بۆ خاوەن و بەڕێوەبەرانە!",
+            "bal_text": "💰 باڵانسی ئێستای تۆ:",
+            "buy_text": "💳 بۆ کڕینی باڵانس یان بەشداریکردن، تکایە سەردانی ئەم دوو یۆزەرنەمەیە بکە:",
+            "sub_plans_title": "📦 **پلانی بەشداریکردنی ڤیدیۆ (4K):**",
+            "sub_1": "1️⃣ مانگێک (5k)",
+            "sub_6": "2️⃣ 6 مانگ (10k)",
+            "sub_12": "3️⃣ ساڵێک (15k)",
+            "check_sub": "🔄 پشکنینی بەشداریکردن",
+            "profile_title": "👤 **پڕۆفایلم:**",
+            "id_text": "🆔 ناسنامە (ID):",
+            "sub_label": "📦 بەشداریکردن:",
+            "no_sub_profile": "❌ هیچ بەشداریکردنێک نییە",
+            "lang_label": "🌐 زمان: کوردی (سۆرانی)",
+            "mx_prompt": "⚙️ **MX PANEL (بەڕێوەبەر)**\n\n👤 تکایە ژمارەی IDی بەکارهێنەر لێرە بنووسە بۆ زیادکردنی باڵانس:",
+            "gen_video": "⏳ چاوەڕوان بە... ڤیدیۆکەی 4K ئامادە دەبێت..."
         },
         "en": {
             "welcome": "✨ **Hello & Welcome!**\n\nWelcome to the advanced 4K AI Video Generation bot.\nPlease select an option below:",
@@ -76,7 +104,21 @@ def get_text(user_id, key):
             "sub_active": "✅ Your subscription is active!\nPlease send your prompt for 4K video generation:",
             "days_left": "days remaining",
             "video_success": "✅ **Your 4K video was generated successfully!**",
-            "admin_only": "⚠️ This section is restricted to owners/admins!"
+            "admin_only": "⚠️ This section is restricted to owners/admins!",
+            "bal_text": "💰 Your current balance:",
+            "buy_text": "💳 To buy balance or subscribe, please contact:",
+            "sub_plans_title": "📦 **4K Video Subscription Plans:**",
+            "sub_1": "1️⃣ 1 Month (5k)",
+            "sub_6": "2️⃣ 6 Months (10k)",
+            "sub_12": "3️⃣ 1 Year (15k)",
+            "check_sub": "🔄 Check Subscription",
+            "profile_title": "👤 **My Profile:**",
+            "id_text": "🆔 User ID:",
+            "sub_label": "📦 Subscription:",
+            "no_sub_profile": "❌ No active subscription",
+            "lang_label": "🌐 Language: English",
+            "mx_prompt": "⚙️ **MX PANEL (Owner)**\n\n👤 Please enter the User ID to manage balance:",
+            "gen_video": "⏳ Generating 4K video..."
         }
     }
     return texts.get(lang, texts["ku"]).get(key, key)
@@ -129,28 +171,28 @@ def callback_handler(client, callback_query: CallbackQuery):
     elif data == "check_balance":
         bal = user_balances.get(user_id, 0)
         msg.edit_text(
-            f"💰 Balance: **{bal}**\n\n💳 @X_MAM6\n💳 @YUSEEF_SURCHi",
+            f"{get_text(user_id, 'bal_text')} **{bal}**\n\n💳 @X_MAM6\n💳 @YUSEEF_SURCHi",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
 
     elif data == "buy_balance":
         msg.edit_text(
-            "💳 Contact managers to buy balance:\n• @X_MAM6\n• @YUSEEF_SURCHi",
+            f"{get_text(user_id, 'buy_text')}\n• @X_MAM6\n• @YUSEEF_SURCHi",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
 
     elif data == "subscription_plans":
         text = (
-            "📦 **Subscription Plans:**\n\n"
-            "1️⃣ 1 Month (5,000)\n"
-            "2️⃣ 6 Months (10,000)\n"
-            "3️⃣ 1 Year (15,000)\n\n"
-            "💳 @X_MAM6 | @YUSEEF_SURCHi"
+            f"{get_text(user_id, 'sub_plans_title')}\n\n"
+            f"1️⃣ {get_text(user_id, 'sub_1')}\n"
+            f"2️⃣ {get_text(user_id, 'sub_6')}\n"
+            f"3️⃣ {get_text(user_id, 'sub_12')}\n\n"
+            f"💳 @X_MAM6 | @YUSEEF_SURCHi"
         )
         msg.edit_text(text, reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("1️⃣ 1M (5k)", callback_data="buy_plan_1"),
-             InlineKeyboardButton("2️⃣ 6M (10k)", callback_data="buy_plan_6")],
-            [InlineKeyboardButton("3️⃣ 1Y (15k)", callback_data="buy_plan_12")],
+            [InlineKeyboardButton(get_text(user_id, "sub_1"), callback_data="buy_plan_1"),
+             InlineKeyboardButton(get_text(user_id, "sub_6"), callback_data="buy_plan_6")],
+            [InlineKeyboardButton(get_text(user_id, "sub_12"), callback_data="buy_plan_12")],
             [InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]
         ]))
 
@@ -161,13 +203,13 @@ def callback_handler(client, callback_query: CallbackQuery):
         current_bal = user_balances.get(user_id, 0)
 
         if current_bal < cost:
-            callback_query.answer("❌ Low balance!", show_alert=True)
+            callback_query.answer("❌ باڵانسا تە بس نینە! / باڵانست نییە!", show_alert=True)
             return
 
         user_balances[user_id] = 0
         expire_time = time.time() + (months * 30 * 86400)
         user_subscriptions[user_id] = {
-            "plan": f"{months} Months",
+            "plan": f"{months}",
             "expire_time": expire_time
         }
         callback_query.answer("✅ Success!", show_alert=True)
@@ -180,14 +222,14 @@ def callback_handler(client, callback_query: CallbackQuery):
             remaining_days = int((sub["expire_time"] - time.time()) / 86400)
             sub_status = f"✅ {sub['plan']} ({remaining_days} {get_text(user_id, 'days_left')})"
         else:
-            sub_status = "❌ No active subscription"
+            sub_status = get_text(user_id, "no_sub_profile")
 
         profile_text = (
-            f"👤 **Profile:**\n\n"
-            f"🆔 ID: `{user_id}`\n"
-            f"💰 Balance: **{bal}**\n"
-            f"📦 Subscription: {sub_status}\n"
-            f"🌐 Language: `{user_languages.get(user_id, 'ku')}`"
+            f"{get_text(user_id, 'profile_title')}\n\n"
+            f"{get_text(user_id, 'id_text')} `{user_id}`\n"
+            f"{get_text(user_id, 'btn_bal')}: **{bal}**\n"
+            f"{get_text(user_id, 'sub_label')} {sub_status}\n"
+            f"{get_text(user_id, 'lang_label')}"
         )
         msg.edit_text(profile_text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]]))
 
@@ -197,10 +239,10 @@ def callback_handler(client, callback_query: CallbackQuery):
             msg.edit_text(
                 get_text(user_id, "no_sub"),
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("1️⃣ 1M (5k)", callback_data="buy_plan_1"),
-                     InlineKeyboardButton("2️⃣ 6M (10k)", callback_data="buy_plan_6")],
-                    [InlineKeyboardButton("3️⃣ 1Y (15k)", callback_data="buy_plan_12")],
-                    [InlineKeyboardButton("🔄 Check Sub", callback_data="create_video")],
+                    [InlineKeyboardButton(get_text(user_id, "sub_1"), callback_data="buy_plan_1"),
+                     InlineKeyboardButton(get_text(user_id, "sub_6"), callback_data="buy_plan_6")],
+                    [InlineKeyboardButton(get_text(user_id, "sub_12"), callback_data="buy_plan_12")],
+                    [InlineKeyboardButton(get_text(user_id, "check_sub"), callback_data="create_video")],
                     [InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]
                 ])
             )
@@ -219,7 +261,7 @@ def callback_handler(client, callback_query: CallbackQuery):
         
         mx_waiting_id.add(user_id)
         msg.edit_text(
-            "⚙️ **MX PANEL (Owner Dashboard)**\n\n👤 Enter User ID:",
+            get_text(user_id, "mx_prompt"),
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
 
@@ -275,7 +317,7 @@ def handle_text(client, message: Message):
                  InlineKeyboardButton("25,000", callback_data="mx_add_25000")],
                 [InlineKeyboardButton("50,000", callback_data="mx_add_50000"),
                  InlineKeyboardButton("100,000", callback_data="mx_add_100000")],
-                [InlineKeyboardButton("🔙 Back", callback_data="mx_panel")]
+                [InlineKeyboardButton(get_text(user_id, "back"), callback_data="mx_panel")]
             ]
             message.reply_text(
                 f"⚙️ **MX PANEL - Custom Balance**\n🆔 ID: `{target_id}`\nSelect amount:",
@@ -290,7 +332,7 @@ def handle_text(client, message: Message):
         prompt = message.text
         enhanced = f"{prompt}, cinematic 4k resolution, hyper realistic"
         
-        sent = message.reply_text("⏳ Generating 4K video...")
+        sent = message.reply_text(get_text(user_id, "gen_video"))
         sent.edit_text(
             f"{get_text(user_id, 'video_success')}\n\n"
             f"🌐 Prompt: `{enhanced}`\n"
