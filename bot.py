@@ -9,7 +9,7 @@ API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
 
 OWNERS = [7643191802, 8038533940]
-DATA_FILE = "ultimate_bot_database.json"
+DATA_FILE = "ultimate_bot_database_v3.json"
 
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -18,7 +18,7 @@ def load_data():
                 return json.load(f)
         except Exception:
             pass
-    return {"balances": {}, "languages": {}, "subscriptions": {}, "all_users": []}
+    return {"balances": {}, "languages": {}, "subscriptions": {}, "all_users": [], "user_info": {}}
 
 def save_data():
     try:
@@ -27,7 +27,8 @@ def save_data():
                 "balances": user_balances,
                 "languages": user_languages,
                 "subscriptions": user_subscriptions,
-                "all_users": list(all_users)
+                "all_users": list(all_users),
+                "user_info": user_info
             }, f, ensure_ascii=False, indent=4)
     except Exception:
         pass
@@ -36,13 +37,14 @@ data_db = load_data()
 user_balances = {int(k): v for k, v in data_db.get("balances", {}).items()}
 user_languages = {int(k): v for k, v in data_db.get("languages", {}).items()}
 user_subscriptions = {int(k): v for k, v in data_db.get("subscriptions", {}).items()}
+user_info = {int(k): v for k, v in data_db.get("user_info", {}).items()}
 all_users = set(data_db.get("all_users", []))
 
 video_wait_prompt = set()
 mx_waiting_id = set()  
 mx_target_users = {}   
 
-app = Client("yuseef_surchi_ultimate_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("yuseef_surchi_ultimate_bot_v3", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 def is_owner(user_id):
     return user_id in OWNERS
@@ -60,7 +62,7 @@ def get_text(user_id, key):
             "btn_lang": "🌐 گۆڕینا زمانێ (Language)",
             "mx_title": "⚙️ MX PANEL (تایبەت بۆ ڕێڤەبەرا)",
             "back": "🔙 ڤەگەر",
-            "choose_lang": "🌐 فەرموو زمانێ خۆ هەلبژێرە:\n\nSelect your language / زمانەکەت هەڵبژێرە:",
+            "choose_lang": "🌐 فەرموو زمانێ خۆ هەلبژێرە:\n\nSelect your language / اختر لغتك / زمانەکەت هەڵبژێرە:",
             "lang_changed": "✅ زمان ب سەرکەفتی هاتە گۆڕین بۆ کوردی (بادینی)!",
             "no_sub": "❌ تە چ پشکداریکردنەکا کارا نینە!\nلطفەن سەرەتا پشکداریکردنێ چێکە یان باڵانسا خۆ ل دەف ڕێڤەبەرا زێدە بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
             "sub_active": "✅ پشکداریکردنا تە یا کارا یە!\n✍️ فەرموو پرۆمپتێ خۆ بنڤیسە یان وێنەیەکێ ڕێفرنس بۆ ناسینا دەمچەی بنێرە:",
@@ -92,7 +94,7 @@ def get_text(user_id, key):
             "btn_lang": "🌐 گۆڕینی زمان (Language)",
             "mx_title": "⚙️ MX PANEL (تایبەت بە بەڕێوەبەران)",
             "back": "🔙 گەڕانەوە",
-            "choose_lang": "🌐 تکایە زمانەکەت هەڵبژێرە:\n\nSelect your language / زمانەکەت هەڵبژێرە:",
+            "choose_lang": "🌐 تکایە زمانەکەت هەڵبژێرە:\n\nSelect your language / اختر لغتك / زمانەکەت هەڵبژێرە:",
             "lang_changed": "✅ زمان بە سەرکەوتوویی گۆڕدرا بۆ کوردی (سۆرانی)!",
             "no_sub": "❌ تۆ هیچ بەشداریکردنێکی چالاکت نییە!\nتکایە سەرەتا بەشداریکردن بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
             "sub_active": "✅ بەشداریکردنەکەت چالاکە!\n✍️ تکایە پڕۆمپتەکەت بنووسە یان وێنەیەک بنێرە:",
@@ -114,6 +116,38 @@ def get_text(user_id, key):
             "mx_prompt": "⚙️ **MX PANEL - بەڕێوەبەر**\n\n👤 تکایە IDی بەکارهێنەر لێرە بنووسە:",
             "gen_video": "⏳ چاوەڕوانبە... زیرەکی دەستکرد خەریکی دروستکردنی ڤیدیۆکەتە..."
         },
+        "ar": {
+            "welcome": "🔥 **أهلاً بك!**\n\nمرحباً بك في النظام المتقدم لإنشاء فيديوهات 4K بالذكاء الاصطناعي مع ميزة **Facial Consistency**.\nيرجى اختيار أحد الخيارات:",
+            "btn_video": "🎬 إنشاء فيديو 4K (AI)",
+            "btn_bal": "💰 رصيدي",
+            "btn_buy": "💳 شراء رصيد",
+            "btn_sub": "📦 خطط الاشتراكات",
+            "btn_prof": "👤 ملفي الشخصي",
+            "btn_lang": "🌐 تغيير اللغة (Language)",
+            "mx_title": "⚙️ MX PANEL (خاص للمشرفين)",
+            "back": "🔙 رجوع",
+            "choose_lang": "🌐 يجى اختيار لغتك المفضلة:\n\nSelect your language / اختر لغتك:",
+            "lang_changed": "✅ تم تغيير اللغة بنجاح إلى العربية!",
+            "no_sub": "❌ ليس لديك اشتراك نشط!\nيرجى الاشتراك أولاً أو زيادة الرصيد.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
+            "sub_active": "✅ اشتراكك نشط!\n✍️ أرسل الوصف (Prompt) الخاص بك أو صورة مرجعية:",
+            "days_left": "أيام متبقية",
+            "video_success": "🚀 **تم إنتاج الفيديو بجودة Ultra 4K و Facial Consistency بنجاح!**",
+            "admin_only": "⚠️ هذا القسم مخصص للمشرفين فقط!",
+            "bal_text": "💰 رصيدك الحالي:",
+            "buy_text": "💳 لشراء رصيد أو اشتراك، يجى التواصل مع:",
+            "sub_plans_title": "📦 **خطط اشتراك الفيديوهات (4K):**",
+            "sub_1": "1️⃣ شهر واحد (5,000 د.ع)",
+            "sub_6": "2️⃣ 6 أشهر (10,000 د.ع)",
+            "sub_12": "3️⃣ سنة واحدة (15,000 د.ع)",
+            "check_sub": "🔄 التحقق من الاشتراك",
+            "profile_title": "👤 **ملفك الشخصي:**",
+            "id_text": "🆔 المعرف (ID):",
+            "sub_label": "📦 الاشتراك:",
+            "no_sub_profile": "❌ بدون اشتراك",
+            "lang_label": "🌐 اللغة: العربية",
+            "mx_prompt": "⚙️ **MX PANEL - لوحة المشرف**\n\n👤 يرجى إدخال معرف المستخدم (ID) هنا:",
+            "gen_video": "⏳ جاري المعالجة... الذكاء الاصطناعي يقوم بإنشاء الفيديو الخاص بك بجودة عالية..."
+        },
         "en": {
             "welcome": "🔥 **Hello!**\n\nWelcome to the Ultimate 4K AI Video Bot with **Facial Consistency** technology.\nPlease select an option:",
             "btn_video": "🎬 Create 4K Video (AI)",
@@ -124,7 +158,7 @@ def get_text(user_id, key):
             "btn_lang": "🌐 Change Language",
             "mx_title": "⚙️ MX PANEL (Owner/Admin Only)",
             "back": "🔙 Back",
-            "choose_lang": "🌐 Please select your language:",
+            "choose_lang": "🌐 Please select your language:\n\nSelect your language / اختر لغتك:",
             "lang_changed": "✅ Language successfully changed to English!",
             "no_sub": "❌ You don't have an active subscription!\nPlease subscribe first.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
             "sub_active": "✅ Your subscription is active!\n✍️ Send your prompt or reference image:",
@@ -164,8 +198,15 @@ def main_menu_keyboard(user_id):
 
 @app.on_message(filters.command("start"))
 def start_cmd(client, message: Message):
-    user_id = message.from_user.id
+    user = message.from_user
+    user_id = user.id
     all_users.add(user_id)
+    
+    user_info[user_id] = {
+        "username": f"@{user.username}" if user.username else "بێ یۆزەرنەم",
+        "nickname": f"{user.first_name} {user.last_name or ''}".strip()
+    }
+
     if user_id not in user_balances:
         user_balances[user_id] = 0
     save_data()
@@ -192,6 +233,7 @@ def callback_handler(client, callback_query: CallbackQuery):
         lang_buttons = [
             [InlineKeyboardButton("🇮🇶 کوردی (بادینی)", callback_data="set_lang_ku")],
             [InlineKeyboardButton("🇮🇶 کوردی (سۆرانی)", callback_data="set_lang_ckb")],
+            [InlineKeyboardButton("🇮🇶 العربية", callback_data="set_lang_ar")],
             [InlineKeyboardButton("🇬🇧 English", callback_data="set_lang_en")],
             [InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]
         ]
@@ -232,17 +274,29 @@ def callback_handler(client, callback_query: CallbackQuery):
         current_bal = user_balances.get(user_id, 0)
 
         if current_bal < cost:
-            callback_query.answer("❌ باڵانسا تە بەس نینە!", show_alert=True)
+            callback_query.answer("❌ باڵانسا تە بەس نینە! / رصيدك غير كافي!", show_alert=True)
             return
 
         user_balances[user_id] -= cost
-        expire_time = time.time() + (months * 30 * 86400)
+        
+        current_time = time.time()
+        existing_sub = user_subscriptions.get(user_id)
+        
+        days_to_add = months * 30
+        if existing_sub and existing_sub["expire_time"] > current_time:
+            expire_time = existing_sub["expire_time"] + (days_to_add * 86400)
+            total_months = int(existing_sub.get("months_count", 1) + months)
+        else:
+            expire_time = current_time + (days_to_add * 86400)
+            total_months = months
+
         user_subscriptions[user_id] = {
-            "plan": f"{months}",
-            "expire_time": expire_time
+            "plan": f"{total_months} مانگ/هەیڤ",
+            "expire_time": expire_time,
+            "months_count": total_months
         }
         save_data()
-        callback_query.answer("✅ Success!", show_alert=True)
+        callback_query.answer("✅ Success! Subscription Activated.", show_alert=True)
         msg.edit_text(get_text(user_id, "sub_active"), reply_markup=main_menu_keyboard(user_id))
 
     elif data == "my_profile":
@@ -250,7 +304,7 @@ def callback_handler(client, callback_query: CallbackQuery):
         bal = user_balances.get(user_id, 0)
         if sub and sub["expire_time"] > time.time():
             remaining_days = int((sub["expire_time"] - time.time()) / 86400)
-            sub_status = f"✅ {sub['plan']} هەیڤ ({remaining_days} {get_text(user_id, 'days_left')})"
+            sub_status = f"✅ {sub['plan']} ({remaining_days} {get_text(user_id, 'days_left')})"
         else:
             sub_status = get_text(user_id, "no_sub_profile")
 
@@ -313,12 +367,26 @@ def callback_handler(client, callback_query: CallbackQuery):
         save_data()
         
         try:
-            client.send_message(target_id, f"✅ Balance added: +{amount} IQD")
+            notif_msg = client.send_message(
+                target_id, 
+                f"🎉 **پیرۆزە! باڵانس بۆ هەژمارا تە هاتە زیادکرن.**\n💰 بڕێ زێدەبووی: `+{amount} د.ع`\n💳 باڵانسا نۆکە: `{user_balances[target_id]} د.ع`"
+            )
+            def delete_later():
+                time.sleep(8)
+                try:
+                    client.delete_messages(target_id, notif_msg.id)
+                except Exception:
+                    pass
+            import threading
+            threading.Thread(target=delete_later, daemon=True).start()
         except Exception:
             pass
 
         msg.edit_text(
-            f"✅ **Balance sent successfully!**\n🆔 ID: `{target_id}`\n💰 Added: {amount} IQD",
+            f"✅ **باڵانس ب سەرکەفتی هاتە هنارتن!**\n\n"
+            f"🆔 ID: `{target_id}`\n"
+            f"💰 باڵانسا نوو: `{user_balances[target_id]} د.ع`\n"
+            f"✨ (پەیاما ئاگاداریێ بۆ چاتێ وی هاتە هنارتن و دێ پشتی 8 چرکەیان ژناڤچیت)",
             reply_markup=main_menu_keyboard(user_id)
         )
         if user_id in mx_target_users:
@@ -333,30 +401,48 @@ def callback_handler(client, callback_query: CallbackQuery):
 
 @app.on_message(filters.text & ~filters.command(["start", "addbal", "stats", "broadcast"]))
 def handle_text(client, message: Message):
-    user_id = message.from_user.id
+    user = message.from_user
+    user_id = user.id
     all_users.add(user_id)
+    
+    user_info[user_id] = {
+        "username": f"@{user.username}" if user.username else "بێ یۆزەرنەم",
+        "nickname": f"{user.first_name} {user.last_name or ''}".strip()
+    }
+    save_data()
     
     if is_owner(user_id) and user_id in mx_waiting_id:
         mx_waiting_id.remove(user_id)
+        text_input = message.text.strip()
+        
         try:
-            target_id = int(message.text.strip())
+            target_id = int(text_input)
             mx_target_users[user_id] = target_id
             
+            t_info = user_info.get(target_id, {"username": "نەدیار", "nickname": "نەدیار"})
+            t_bal = user_balances.get(target_id, 0)
+            
             buttons = [
-                [InlineKeyboardButton("5,000", callback_data="mx_add_5000"),
-                 InlineKeyboardButton("10,000", callback_data="mx_add_10000")],
-                [InlineKeyboardButton("15,000", callback_data="mx_add_15000"),
-                 InlineKeyboardButton("25,000", callback_data="mx_add_25000")],
-                [InlineKeyboardButton("50,000", callback_data="mx_add_50000"),
-                 InlineKeyboardButton("100,000", callback_data="mx_add_100000")],
+                [InlineKeyboardButton("5,000 د.ع", callback_data="mx_add_5000"),
+                 InlineKeyboardButton("10,000 د.ع", callback_data="mx_add_10000")],
+                [InlineKeyboardButton("15,000 د.ع", callback_data="mx_add_15000"),
+                 InlineKeyboardButton("25,000 د.ع", callback_data="mx_add_25000")],
+                [InlineKeyboardButton("50,000 د.ع", callback_data="mx_add_50000"),
+                 InlineKeyboardButton("100,000 د.ع", callback_data="mx_add_100000")],
                 [InlineKeyboardButton(get_text(user_id, "back"), callback_data="mx_panel")]
             ]
+            
             message.reply_text(
-                f"⚙️ **MX PANEL - Custom Balance**\n🆔 ID: `{target_id}`\nSelect amount:",
+                f"⚙️ **MX PANEL - دیتنا زانیاریێن بکارهێنەری**\n\n"
+                f"👤 ناڤ (Nickname): `{t_info['nickname']}`\n"
+                f"🔗 یۆزەرنەم (Username): `{t_info['username']}`\n"
+                f"🆔 ناسنامە (ID): `{target_id}`\n"
+                f"💰 باڵانسا نۆکە: `{t_bal} د.ع`\n\n"
+                f"👇 فەرموو بڕێ باڵانسا تە ڤەدگۆڕێ هەلبژێرە:",
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
         except ValueError:
-            message.reply_text("⚠️ Invalid ID!", reply_markup=main_menu_keyboard(user_id))
+            message.reply_text("⚠️ ژمارا ID یا هاتییە نڤیسین هەڵە یە!", reply_markup=main_menu_keyboard(user_id))
         return
 
     if user_id in video_wait_prompt:
