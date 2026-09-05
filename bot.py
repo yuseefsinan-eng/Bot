@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import threading
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
@@ -9,7 +10,7 @@ API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
 
 OWNERS = [7643191802, 8038533940]
-DATA_FILE = "ultimate_bot_database_v3.json"
+DATA_FILE = "ultimate_master_bot_db_v4.json"
 
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -43,8 +44,9 @@ all_users = set(data_db.get("all_users", []))
 video_wait_prompt = set()
 mx_waiting_id = set()  
 mx_target_users = {}   
+broadcast_waiting_id = set()
 
-app = Client("yuseef_surchi_ultimate_bot_v3", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("yuseef_surchi_master_bot_v4", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 def is_owner(user_id):
     return user_id in OWNERS
@@ -53,7 +55,7 @@ def get_text(user_id, key):
     lang = user_languages.get(user_id, "ku") 
     texts = {
         "ku": {
-            "welcome": "🔥 **سلاڤ و ڕێز بۆ خودانێ کێشەر!**\n\nب خێر هاتنی بۆ سیستەمێ پێشکەفتی یێ چێکرنا ڤیدیۆیا 4K و AI ب تایبەتمەندیا **Facial Consistency**.\nفەرموو هەلبژێرە:",
+            "welcome": "🔥 **سلاڤ و ڕێز بۆ خودانێ کێشەر!**\n\nب خێر هاتنی بۆ سیستەمێ مەزنێ چێکرنا ڤیدیۆیا 4K و AI ب تایبەتمەندیا **Facial Consistency**.\nفەرموو هەلبژێرە:",
             "btn_video": "🎬 دروستکرنا ڤیدیۆیا 4K (AI)",
             "btn_bal": "💰 باڵانسا من",
             "btn_buy": "💳 کرینا باڵانسی",
@@ -61,7 +63,8 @@ def get_text(user_id, key):
             "btn_prof": "👤 پروفایلا من",
             "btn_lang": "🌐 گۆڕینا زمانێ (Language)",
             "mx_title": "⚙️ MX PANEL (تایبەت بۆ ڕێڤەبەرا)",
-            "back": "🔙 ڤەگەر",
+            "mx_broadcast": "📢 هنارتنا ڕیکلامان بۆ هەمیان",
+            "back": "🔙 ڤەگەر بۆ سەرەکی",
             "choose_lang": "🌐 فەرموو زمانێ خۆ هەلبژێرە:\n\nSelect your language / اختر لغتك / زمانەکەت هەڵبژێرە:",
             "lang_changed": "✅ زمان ب سەرکەفتی هاتە گۆڕین بۆ کوردی (بادینی)!",
             "no_sub": "❌ تە چ پشکداریکردنەکا کارا نینە!\nلطفەن سەرەتا پشکداریکردنێ چێکە یان باڵانسا خۆ ل دەف ڕێڤەبەرا زێدە بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
@@ -81,7 +84,7 @@ def get_text(user_id, key):
             "sub_label": "📦 پشکداریکردن:",
             "no_sub_profile": "❌ بێ پشکداریکردن",
             "lang_label": "🌐 زمان: کوردی (بادینی)",
-            "mx_prompt": "⚙️ **MX PANEL - سیستەمێ ڕێڤەبەریێ**\n\n👤 فەرموو، ID یا بکارهێنەری ل ڤێرە بنڤیسە:",
+            "mx_prompt": "⚙️ **MX PANEL - کۆنترۆلا ڕێڤەبەریێ**\n\n👤 فەرموو، ID یا بکارهێنەری ل ڤێرە بنڤیسە دا زانیاریێن وی ببینن و باڵانسی بۆ زێدە بکەی:",
             "gen_video": "⏳ چاوەڕوانبە... سیستەمێ AI مژوولی چێکرنا ڤیدیۆیا تە یە ب کوالێتیا بلند..."
         },
         "ckb": {
@@ -93,7 +96,8 @@ def get_text(user_id, key):
             "btn_prof": "👤 پڕۆفایلم",
             "btn_lang": "🌐 گۆڕینی زمان (Language)",
             "mx_title": "⚙️ MX PANEL (تایبەت بە بەڕێوەبەران)",
-            "back": "🔙 گەڕانەوە",
+            "mx_broadcast": "📢 ناردنی ڕیکلام بۆ گشت بەکارهێنەران",
+            "back": "🔙 گەڕانەوە بۆ سەرەکی",
             "choose_lang": "🌐 تکایە زمانەکەت هەڵبژێرە:\n\nSelect your language / اختر لغتك / زمانەکەت هەڵبژێرە:",
             "lang_changed": "✅ زمان بە سەرکەوتوویی گۆڕدرا بۆ کوردی (سۆرانی)!",
             "no_sub": "❌ تۆ هیچ بەشداریکردنێکی چالاکت نییە!\nتکایە سەرەتا بەشداریکردن بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
@@ -113,7 +117,7 @@ def get_text(user_id, key):
             "sub_label": "📦 بەشداریکردن:",
             "no_sub_profile": "❌ بێ بەشداریکردن",
             "lang_label": "🌐 زمان: کوردی (سۆرانی)",
-            "mx_prompt": "⚙️ **MX PANEL - بەڕێوەبەر**\n\n👤 تکایە IDی بەکارهێنەر لێرە بنووسە:",
+            "mx_prompt": "⚙️ **MX PANEL - کۆنتڕۆڵی بەڕێوەبەر**\n\n👤 تکایە IDی بەکارهێنەر لێرە بنووسە:",
             "gen_video": "⏳ چاوەڕوانبە... زیرەکی دەستکرد خەریکی دروستکردنی ڤیدیۆکەتە..."
         },
         "ar": {
@@ -125,8 +129,9 @@ def get_text(user_id, key):
             "btn_prof": "👤 ملفي الشخصي",
             "btn_lang": "🌐 تغيير اللغة (Language)",
             "mx_title": "⚙️ MX PANEL (خاص للمشرفين)",
-            "back": "🔙 رجوع",
-            "choose_lang": "🌐 يجى اختيار لغتك المفضلة:\n\nSelect your language / اختر لغتك:",
+            "mx_broadcast": "📢 إرسال إعلان للجميع",
+            "back": "🔙 رجوع للقائمة الرئيسية",
+            "choose_lang": "🌐 يرجى اختيار لغتك المفضلة:\n\nSelect your language / اختر لغتك:",
             "lang_changed": "✅ تم تغيير اللغة بنجاح إلى العربية!",
             "no_sub": "❌ ليس لديك اشتراك نشط!\nيرجى الاشتراك أولاً أو زيادة الرصيد.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
             "sub_active": "✅ اشتراكك نشط!\n✍️ أرسل الوصف (Prompt) الخاص بك أو صورة مرجعية:",
@@ -134,7 +139,7 @@ def get_text(user_id, key):
             "video_success": "🚀 **تم إنتاج الفيديو بجودة Ultra 4K و Facial Consistency بنجاح!**",
             "admin_only": "⚠️ هذا القسم مخصص للمشرفين فقط!",
             "bal_text": "💰 رصيدك الحالي:",
-            "buy_text": "💳 لشراء رصيد أو اشتراك، يجى التواصل مع:",
+            "buy_text": "💳 لشراء رصيد أو اشتراك، يرجى التواصل مع:",
             "sub_plans_title": "📦 **خطط اشتراك الفيديوهات (4K):**",
             "sub_1": "1️⃣ شهر واحد (5,000 د.ع)",
             "sub_6": "2️⃣ 6 أشهر (10,000 د.ع)",
@@ -157,7 +162,8 @@ def get_text(user_id, key):
             "btn_prof": "👤 My Profile",
             "btn_lang": "🌐 Change Language",
             "mx_title": "⚙️ MX PANEL (Owner/Admin Only)",
-            "back": "🔙 Back",
+            "mx_broadcast": "📢 Broadcast Message",
+            "back": "🔙 Back to Main Menu",
             "choose_lang": "🌐 Please select your language:\n\nSelect your language / اختر لغتك:",
             "lang_changed": "✅ Language successfully changed to English!",
             "no_sub": "❌ You don't have an active subscription!\nPlease subscribe first.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
@@ -177,7 +183,7 @@ def get_text(user_id, key):
             "sub_label": "📦 Subscription:",
             "no_sub_profile": "❌ No active subscription",
             "lang_label": "🌐 Language: English",
-            "mx_prompt": "⚙️ **MX PANEL - Admin**\n\n👤 Please enter User ID:",
+            "mx_prompt": "⚙️ **MX PANEL - Admin Control**\n\n👤 Please enter User ID:",
             "gen_video": "⏳ Processing... AI is generating your 4K video with facial consistency..."
         }
     }
@@ -194,6 +200,7 @@ def main_menu_keyboard(user_id):
     ]
     if is_owner(user_id):
         buttons.append([InlineKeyboardButton(get_text(user_id, "mx_title"), callback_data="mx_panel")])
+        buttons.append([InlineKeyboardButton(get_text(user_id, "mx_broadcast"), callback_data="mx_broadcast_start")])
     return InlineKeyboardMarkup(buttons)
 
 @app.on_message(filters.command("start"))
@@ -213,6 +220,8 @@ def start_cmd(client, message: Message):
 
     if user_id in mx_waiting_id:
         mx_waiting_id.remove(user_id)
+    if user_id in broadcast_waiting_id:
+        broadcast_waiting_id.remove(user_id)
 
     message.reply_text(get_text(user_id, "welcome"), reply_markup=main_menu_keyboard(user_id))
 
@@ -349,6 +358,15 @@ def callback_handler(client, callback_query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
 
+    elif data == "mx_broadcast_start":
+        if not is_owner(user_id):
+            return
+        broadcast_waiting_id.add(user_id)
+        msg.edit_text(
+            "📢 **هنارتنا ڕیکلام / Broadcast**\n\nفەرموو ئەو پەیام، وێنە یان ڤیدیۆیا تە دڤێت بۆ هەمی بکارهێنەران بنێری لێرە ریپلای بکە یان بنێرە:",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
+        )
+
     elif data.startswith("mx_add_"):
         if not is_owner(user_id):
             return
@@ -377,7 +395,6 @@ def callback_handler(client, callback_query: CallbackQuery):
                     client.delete_messages(target_id, notif_msg.id)
                 except Exception:
                     pass
-            import threading
             threading.Thread(target=delete_later, daemon=True).start()
         except Exception:
             pass
@@ -397,6 +414,8 @@ def callback_handler(client, callback_query: CallbackQuery):
             video_wait_prompt.remove(user_id)
         if user_id in mx_waiting_id:
             mx_waiting_id.remove(user_id)
+        if user_id in broadcast_waiting_id:
+            broadcast_waiting_id.remove(user_id)
         msg.edit_text(get_text(user_id, "welcome"), reply_markup=main_menu_keyboard(user_id))
 
 @app.on_message(filters.text & ~filters.command(["start", "addbal", "stats", "broadcast"]))
@@ -411,6 +430,22 @@ def handle_text(client, message: Message):
     }
     save_data()
     
+    if is_owner(user_id) and user_id in broadcast_waiting_id:
+        broadcast_waiting_id.remove(user_id)
+        success = 0
+        failed = 0
+        for uid in all_users:
+            try:
+                message.copy(uid)
+                success += 1
+            except Exception:
+                failed += 1
+        message.reply_text(
+            f"✅ **ڕیکلام ب سەرکەفتی بۆ گشت کەسان هاتە هنارتن!**\n\n📤 سەرکەفتی: `{success}`\n❌ نەگەهشتە: `{failed}`",
+            reply_markup=main_menu_keyboard(user_id)
+        )
+        return
+
     if is_owner(user_id) and user_id in mx_waiting_id:
         mx_waiting_id.remove(user_id)
         text_input = message.text.strip()
@@ -433,12 +468,13 @@ def handle_text(client, message: Message):
             ]
             
             message.reply_text(
-                f"⚙️ **MX PANEL - دیتنا زانیاریێن بکارهێنەری**\n\n"
-                f"👤 ناڤ (Nickname): `{t_info['nickname']}`\n"
-                f"🔗 یۆزەرنەم (Username): `{t_info['username']}`\n"
-                f"🆔 ناسنامە (ID): `{target_id}`\n"
-                f"💰 باڵانسا نۆکە: `{t_bal} د.ع`\n\n"
-                f"👇 فەرموو بڕێ باڵانسا تە ڤەدگۆڕێ هەلبژێرە:",
+                f"💎 **MX PANEL - ناسناما دیتنا باوەڕپێکری** 💎\n\n"
+                f"👤 **ناڤ (Nickname):** `{t_info['nickname']}`\n"
+                f"🔗 **یۆزەرنەم (Username):** `{t_info['username']}`\n"
+                f"🆔 **کۆدێ ناسنامێ (ID):** `{target_id}`\n"
+                f"💰 **باڵانسا نۆکە:** `{t_bal} د.ع`\n\n"
+                f"🟢 **پشتی ڕاستکردنێ:** ئەڤە کەسەکێ ڕاستەقینەیە و د بۆتی دا تۆمارکراوە.\n\n"
+                f"👇 **فەرموو بڕێ باڵانسا تە ڤەدگۆڕێ هەلبژێرە:**",
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
         except ValueError:
@@ -466,24 +502,6 @@ def stats_cmd(client, message: Message):
     total_u = len(all_users)
     total_subs = len(user_subscriptions)
     message.reply_text(f"📊 **ئامارێن بۆتێ:**\n\n👥 هەمی بکارهێنەر: `{total_u}`\n📦 پشکدارێن کارا: `{total_subs}`")
-
-@app.on_message(filters.command("broadcast"))
-def broadcast_cmd(client, message: Message):
-    if not is_owner(message.from_user.id):
-        return
-    if not message.reply_to_message:
-        message.reply_text("⚠️ ڕیپلاي ل سەر وێنە یان پەیامەکێ بکە و `/broadcast` بنڤیسە.")
-        return
-    
-    success = 0
-    failed = 0
-    for uid in all_users:
-        try:
-            message.reply_to_message.copy(uid)
-            success += 1
-        except Exception:
-            failed += 1
-    message.reply_text(f"✅ ڕیکلام ب سەرکەفتی هاتە هنارتن:\n📤 گەهشتە: `{success}`\n❌ نەگەهشتە: `{failed}`")
 
 @app.on_message(filters.command("addbal"))
 def add_balance_cmd(client, message: Message):
