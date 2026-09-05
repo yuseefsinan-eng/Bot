@@ -10,7 +10,7 @@ API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
 
 OWNERS = [7643191802, 8038533940]
-DATA_FILE = "ultimate_master_bot_db_v4.json"
+DATA_FILE = "ultimate_master_bot_db_v5.json"
 
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -46,7 +46,7 @@ mx_waiting_id = set()
 mx_target_users = {}   
 broadcast_waiting_id = set()
 
-app = Client("yuseef_surchi_master_bot_v4", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("yuseef_surchi_master_bot_v5", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 def is_owner(user_id):
     return user_id in OWNERS
@@ -360,10 +360,11 @@ def callback_handler(client, callback_query: CallbackQuery):
 
     elif data == "mx_broadcast_start":
         if not is_owner(user_id):
+            callback_query.answer(get_text(user_id, "admin_only"), show_alert=True)
             return
         broadcast_waiting_id.add(user_id)
         msg.edit_text(
-            "📢 **هنارتنا ڕیکلام / Broadcast**\n\nفەرموو ئەو پەیام، وێنە یان ڤیدیۆیا تە دڤێت بۆ هەمی بکارهێنەران بنێری لێرە ریپلای بکە یان بنێرە:",
+            "📢 **هنارتنا ڕیکلام / Broadcast**\n\nفەرموو ئەو پەیام، وێنە یان ڤیدیۆیا تە دڤێت بۆ هەمی بکارهێنەران ب لەز بنێری لێرە بنێرە:",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
 
@@ -432,18 +433,28 @@ def handle_text(client, message: Message):
     
     if is_owner(user_id) and user_id in broadcast_waiting_id:
         broadcast_waiting_id.remove(user_id)
-        success = 0
-        failed = 0
-        for uid in all_users:
+        
+        # هنارتنا ڕیکلامان ب لەز و ب ڕێکا Backgroud Thread دا چات نەگریت
+        def send_fast_broadcast():
+            success = 0
+            failed = 0
+            for uid in all_users:
+                try:
+                    message.copy(uid)
+                    success += 1
+                except Exception:
+                    failed += 1
             try:
-                message.copy(uid)
-                success += 1
+                client.send_message(
+                    user_id,
+                    f"✅ **ڕیکلام ب لەز و ب سەرکەفتی بۆ گشت کەسان هاتە هنارتن!**\n\n📤 سەرکەفتی: `{success}`\n❌ نەگەهشتە: `{failed}`",
+                    reply_markup=main_menu_keyboard(user_id)
+                )
             except Exception:
-                failed += 1
-        message.reply_text(
-            f"✅ **ڕیکلام ب سەرکەفتی بۆ گشت کەسان هاتە هنارتن!**\n\n📤 سەرکەفتی: `{success}`\n❌ نەگەهشتە: `{failed}`",
-            reply_markup=main_menu_keyboard(user_id)
-        )
+                pass
+
+        threading.Thread(target=send_fast_broadcast, daemon=True).start()
+        message.reply_text("⚡ **ڕیکلام د مەژیێ پشتپەردە دا دەست ب هنارتنێ کر (زیکا زیکا دچیت)...**", reply_markup=main_menu_keyboard(user_id))
         return
 
     if is_owner(user_id) and user_id in mx_waiting_id:
