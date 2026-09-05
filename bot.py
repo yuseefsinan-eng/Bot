@@ -4,10 +4,14 @@ import json
 import threading
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+import google.generativeai as genai
 
 API_ID = 34584240
 API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
+
+GEMINI_API_KEY = "AQ.Ab8RN6KEiH7KRmoJf14L4Ww9yc1OwpKhp4kWlW1oBZnSSunAwQ"
+genai.configure(api_key=GEMINI_API_KEY)
 
 OWNERS = [7643191802, 8038533940]
 DATA_FILE = "ultimate_master_bot_db_v5.json"
@@ -70,7 +74,7 @@ def get_text(user_id, key):
             "no_sub": "❌ تە چ پشکداریکردنەکا کارا نینە!\nلطفەن سەرەتا پشکداریکردنێ چێکە یان باڵانسا خۆ ل دەف ڕێڤەبەرا زێدە بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
             "sub_active": "✅ پشکداریکردنا تە یا کارا یە!\n✍️ فەرموو پرۆمپتێ خۆ بنڤیسە یان وێنەیەکێ ڕێفرنس بۆ ناسینا دەمچەی بنێرە:",
             "days_left": "ڕۆژ ماینە بۆ خلاساربوونێ",
-            "video_success": "🚀 **ڤیدیۆیا تە ب کوالێتیا Ultra 4K و Facial Consistency هاتە بەرهەمئینان!**",
+            "video_success": "🚀 **وەراوا ژێرەکیا دەستکرد (Gemini AI) بۆ پڕۆمپتێ تە:**",
             "admin_only": "⚠️ ئەڤ پشکە تنێ بۆ ڕێڤەبەرا یە!",
             "bal_text": "💰 باڵانسا تەیا نۆکە:",
             "buy_text": "💳 بۆ کرینا باڵانسی یان پشکداریکردنێ، پەیوەندیێ ب ڤان هەردوو کاکا بکە:",
@@ -85,7 +89,7 @@ def get_text(user_id, key):
             "no_sub_profile": "❌ بێ پشکداریکردن",
             "lang_label": "🌐 زمان: کوردی (بادینی)",
             "mx_prompt": "⚙️ **MX PANEL - کۆنترۆلا ڕێڤەبەریێ**\n\n👤 فەرموو، ID یا بکارهێنەری ل ڤێرە بنڤیسە دا زانیاریێن وی ببینن و باڵانسی بۆ زێدە بکەی:",
-            "gen_video": "⏳ چاوەڕوانبە... سیستەمێ AI مژوولی چێکرنا ڤیدیۆیا تە یە ب کوالێتیا بلند..."
+            "gen_video": "⏳ چاوەڕوانبە... ژێرەکیا دەستکرد مژوولی تشتکرنا وەڵاما تە یە..."
         },
         "ckb": {
             "welcome": "🔥 **سڵاو و ڕێز بۆ بەڕێزت!**\n\nبەخێر هاتیت بۆ سیستەمی پێشکەوتووی دروستکردنی ڤیدیۆی 4K بە تایبەتمەندی **Facial Consistency**.\nتکایە یەکێک هەڵبژێرە:",
@@ -103,7 +107,7 @@ def get_text(user_id, key):
             "no_sub": "❌ تۆ هیچ بەشداریکردنێکی چالاکت نییە!\nتکایە سەرەتا بەشداریکردن بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
             "sub_active": "✅ بەشداریکردنەکەت چالاکە!\n✍️ تکایە پڕۆمپتەکەت بنووسە یان وێنەیەک بنێرە:",
             "days_left": "ڕۆژ ماون بۆ کۆتایی هاتن",
-            "video_success": "🚀 **ڤیدیۆکەت بە کوالێتی Ultra 4K و Facial Consistency دروست کرا!**",
+            "video_success": "🚀 **وەڵامی زیرەکی دەستکرد (Gemini AI):**",
             "admin_only": "⚠️ ئەم بەشە تەنها بۆ بەڕێوەبەرانە!",
             "bal_text": "💰 باڵانسی ئێستای تۆ:",
             "buy_text": "💳 بۆ کڕینی باڵانس، پەیوەندی بەم کەسانە بکە:",
@@ -118,10 +122,10 @@ def get_text(user_id, key):
             "no_sub_profile": "❌ بێ بەشداریکردن",
             "lang_label": "🌐 زمان: کوردی (سۆرانی)",
             "mx_prompt": "⚙️ **MX PANEL - کۆنتڕۆڵی بەڕێوەبەر**\n\n👤 تکایە IDی بەکارهێنەر لێرە بنووسە:",
-            "gen_video": "⏳ چاوەڕوانبە... زیرەکی دەستکرد خەریکی دروستکردنی ڤیدیۆکەتە..."
+            "gen_video": "⏳ چاوەڕوانبە... زیرەکی دەستکرد کار لەسەر داواکارییەکەت دەکات..."
         },
         "ar": {
-            "welcome": "🔥 **أهلاً بك!**\n\nمرحباً بك في النظام المتقدم لإنشاء فيديوهات 4K بالذكاء الاصطناعي مع ميزة **Facial Consistency**.\nيرجى اختيار أحد الخيارات:",
+            "welcome": "🔥 **أهلاً بك!**\n\nمرحباً بك في النظام الذكي المربوط بـ Gemini AI.\nيرجى اختيار أحد الخيارات:",
             "btn_video": "🎬 إنشاء فيديو 4K (AI)",
             "btn_bal": "💰 رصيدي",
             "btn_buy": "💳 شراء رصيد",
@@ -133,14 +137,14 @@ def get_text(user_id, key):
             "back": "🔙 رجوع للقائمة الرئيسية",
             "choose_lang": "🌐 يرجى اختيار لغتك المفضلة:\n\nSelect your language / اختر لغتك:",
             "lang_changed": "✅ تم تغيير اللغة بنجاح إلى العربية!",
-            "no_sub": "❌ ليس لديك اشتراك نشط!\nيرجى الاشتراك أولاً أو زيادة الرصيد.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
-            "sub_active": "✅ اشتراكك نشط!\n✍️ أرسل الوصف (Prompt) الخاص بك أو صورة مرجعية:",
+            "no_sub": "❌ ليس لديك اشتراك نشط!\nيرجى الاشتراك أولاً.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
+            "sub_active": "✅ اشتراكك نشط!\n✍️ أرسل الوصف (Prompt) الخاص بك:",
             "days_left": "أيام متبقية",
-            "video_success": "🚀 **تم إنتاج الفيديو بجودة Ultra 4K و Facial Consistency بنجاح!**",
+            "video_success": "🚀 **رد الذكاء الاصطناعي (Gemini AI):**",
             "admin_only": "⚠️ هذا القسم مخصص للمشرفين فقط!",
             "bal_text": "💰 رصيدك الحالي:",
-            "buy_text": "💳 لشراء رصيد أو اشتراك، يرجى التواصل مع:",
-            "sub_plans_title": "📦 **خطط اشتراك الفيديوهات (4K):**",
+            "buy_text": "💳 لشراء رصيد، يرجى التواصل مع:",
+            "sub_plans_title": "📦 **خطط الاشتراكات:**",
             "sub_1": "1️⃣ شهر واحد (5,000 د.ع)",
             "sub_6": "2️⃣ 6 أشهر (10,000 د.ع)",
             "sub_12": "3️⃣ سنة واحدة (15,000 د.ع)",
@@ -151,10 +155,10 @@ def get_text(user_id, key):
             "no_sub_profile": "❌ بدون اشتراك",
             "lang_label": "🌐 اللغة: العربية",
             "mx_prompt": "⚙️ **MX PANEL - لوحة المشرف**\n\n👤 يرجى إدخال معرف المستخدم (ID) هنا:",
-            "gen_video": "⏳ جاري المعالجة... الذكاء الاصطناعي يقوم بإنشاء الفيديو الخاص بك بجودة عالية..."
+            "gen_video": "⏳ جاري المعالجة بواسطة الذكاء الاصطناعي..."
         },
         "en": {
-            "welcome": "🔥 **Hello!**\n\nWelcome to the Ultimate 4K AI Video Bot with **Facial Consistency** technology.\nPlease select an option:",
+            "welcome": "🔥 **Hello!**\n\nWelcome to the Gemini-powered AI Bot.\nPlease select an option:",
             "btn_video": "🎬 Create 4K Video (AI)",
             "btn_bal": "💰 My Balance",
             "btn_buy": "💳 Buy Balance",
@@ -164,16 +168,16 @@ def get_text(user_id, key):
             "mx_title": "⚙️ MX PANEL (Owner/Admin Only)",
             "mx_broadcast": "📢 Broadcast Message",
             "back": "🔙 Back to Main Menu",
-            "choose_lang": "🌐 Please select your language:\n\nSelect your language / اختر لغتك:",
+            "choose_lang": "🌐 Please select your language:",
             "lang_changed": "✅ Language successfully changed to English!",
             "no_sub": "❌ You don't have an active subscription!\nPlease subscribe first.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
-            "sub_active": "✅ Your subscription is active!\n✍️ Send your prompt or reference image:",
+            "sub_active": "✅ Your subscription is active!\n✍️ Send your prompt:",
             "days_left": "days remaining",
-            "video_success": "🚀 **Your 4K video was generated with Ultra Facial Consistency!**",
+            "video_success": "🚀 **Gemini AI Response:**",
             "admin_only": "⚠️ This section is restricted to admins!",
             "bal_text": "💰 Your current balance:",
-            "buy_text": "💳 To buy balance, please contact:",
-            "sub_plans_title": "📦 **4K Video Subscription Plans:**",
+            "buy_text": "💳 To buy balance, contact:",
+            "sub_plans_title": "📦 **Subscription Plans:**",
             "sub_1": "1️⃣ 1 Month (5,000 IQD)",
             "sub_6": "2️⃣ 6 Months (10,000 IQD)",
             "sub_12": "3️⃣ 1 Year (15,000 IQD)",
@@ -184,7 +188,7 @@ def get_text(user_id, key):
             "no_sub_profile": "❌ No active subscription",
             "lang_label": "🌐 Language: English",
             "mx_prompt": "⚙️ **MX PANEL - Admin Control**\n\n👤 Please enter User ID:",
-            "gen_video": "⏳ Processing... AI is generating your 4K video with facial consistency..."
+            "gen_video": "⏳ Processing via Gemini AI..."
         }
     }
     return texts.get(lang, texts["ku"]).get(key, key)
@@ -434,7 +438,6 @@ def handle_text(client, message: Message):
     if is_owner(user_id) and user_id in broadcast_waiting_id:
         broadcast_waiting_id.remove(user_id)
         
-        # هنارتنا ڕیکلامان ب لەز و ب ڕێکا Backgroud Thread دا چات نەگریت
         def send_fast_broadcast():
             success = 0
             failed = 0
@@ -497,14 +500,37 @@ def handle_text(client, message: Message):
         prompt = message.text
         
         sent = message.reply_text(get_text(user_id, "gen_video"))
-        time.sleep(1)
-        sent.edit_text(
-            f"{get_text(user_id, 'video_success')}\n\n"
-            f"💬 **پڕۆمپت:** `{prompt}`\n"
-            f"🧬 **Facial Consistency:** `Enabled (Reference Priority)`\n"
-            f"🎬 **کوالێتی:** 4K Ultra HD\n\n"
-            f"✨ (بۆتێ ب سەرکەفتی وەڵاما تە دا)"
-        )
+        
+        # دەستنیشانکرنا زمانێ بکارهێنەری دا AI تنێ ب هەمان زمان وەڵام بدەت
+        user_lang = user_languages.get(user_id, "ku")
+        lang_instructions = {
+            "ku": "وەڵاما خۆ ب تنێ ب زمانێ کوردی (بادینی) بنڤیسە، چ زمانێن دی تێکەڵ نەکە.",
+            "ckb": "وەڵامی خۆت تەنها بە زمانی کوردی (سۆرانی) بنووسە، هیچ زمانێکی تر بەکار مەهێنە.",
+            "ar": "قم بالرد باللغة العربية حصراً، ولا تستخدم أي لغة أخرى.",
+            "en": "Reply strictly in English only, do not mix any other language."
+        }
+        system_instruction = lang_instructions.get(user_lang, lang_instructions["ku"])
+
+        def call_gemini():
+            try:
+                # بکاربێنە model-ەکێ کو فەرمانێن سیستمێ بشتراست بکەت
+                model = genai.GenerativeModel(
+                    model_name="gemini-1.5-flash",
+                    system_instruction=system_instruction
+                )
+                response = model.generate_content(prompt)
+                ai_reply = response.text if response and response.text else "⚠️ چ وەڵام نەهات."
+                
+                final_text = (
+                    f"{get_text(user_id, 'video_success')}\n\n"
+                    f"💬 **پڕۆمپت:** `{prompt}`\n\n"
+                    f"{ai_reply}"
+                )
+                sent.edit_text(final_text, reply_markup=main_menu_keyboard(user_id))
+            except Exception as e:
+                sent.edit_text(f"❌ شاشەیەک چێبوو د پەیوەندیێ ب AI ڤە:\n`{str(e)}`", reply_markup=main_menu_keyboard(user_id))
+
+        threading.Thread(target=call_gemini, daemon=True).start()
 
 @app.on_message(filters.command("stats"))
 def stats_cmd(client, message: Message):
