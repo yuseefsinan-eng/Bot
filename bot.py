@@ -168,3 +168,4 @@ def add_balance_cmd(client, message: Message):
         message.reply_text("⚠️ ژ ڕەحمەتا خۆ ID و مەبلەغی ب ژمارە بنڤیسە / تکایە ID و بڕەکە بە ژمارە بنووسە.")
 
 app.run()
+
