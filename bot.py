@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
@@ -8,15 +9,40 @@ API_HASH = "eba4f8333cba5f9697a1d20779d4d6e9"
 BOT_TOKEN = "8653317587:AAH59X7hIIQ2s3rH4rzT26vDMPCRsPVFth8"
 
 OWNERS = [7643191802, 8038533940]
+DATA_FILE = "ultimate_bot_database.json"
 
-user_balances = {}
-user_languages = {}  
-user_subscriptions = {}  
+def load_data():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"balances": {}, "languages": {}, "subscriptions": {}, "all_users": []}
+
+def save_data():
+    try:
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump({
+                "balances": user_balances,
+                "languages": user_languages,
+                "subscriptions": user_subscriptions,
+                "all_users": list(all_users)
+            }, f, ensure_ascii=False, indent=4)
+    except Exception:
+        pass
+
+data_db = load_data()
+user_balances = {int(k): v for k, v in data_db.get("balances", {}).items()}
+user_languages = {int(k): v for k, v in data_db.get("languages", {}).items()}
+user_subscriptions = {int(k): v for k, v in data_db.get("subscriptions", {}).items()}
+all_users = set(data_db.get("all_users", []))
+
 video_wait_prompt = set()
 mx_waiting_id = set()  
 mx_target_users = {}   
 
-app = Client("yuseef_surchi_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("yuseef_surchi_ultimate_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 def is_owner(user_id):
     return user_id in OWNERS
@@ -25,40 +51,40 @@ def get_text(user_id, key):
     lang = user_languages.get(user_id, "ku") 
     texts = {
         "ku": {
-            "welcome": "✨ **سلاڤ و ڕێز!**\n\nب خێر هاتنی بۆ جیهانا پێشکەفتیا چێکرنا ڤیدیۆیان یا 4K ب هێزا AI.\nفەرموو ئێك ژ ڤان ڤالەکان ژ خوارێ هەلبژێرە:",
-            "btn_video": "🎬 دروستکرنا ڤیدیۆ (AI)",
+            "welcome": "🔥 **سلاڤ و ڕێز بۆ خودانێ کێشەر!**\n\nب خێر هاتنی بۆ سیستەمێ پێشکەفتی یێ چێکرنا ڤیدیۆیا 4K و AI ب تایبەتمەندیا **Facial Consistency**.\nفەرموو هەلبژێرە:",
+            "btn_video": "🎬 دروستکرنا ڤیدیۆیا 4K (AI)",
             "btn_bal": "💰 باڵانسا من",
-            "btn_buy": "💳 كرینا باڵانسی",
+            "btn_buy": "💳 کرینا باڵانسی",
             "btn_sub": "📦 پلەنێن پشکداریکردنێ",
             "btn_prof": "👤 پروفایلا من",
-            "btn_lang": "🌐 گوهۆڕینا زمانێ (Language)",
+            "btn_lang": "🌐 گۆڕینا زمانێ (Language)",
             "mx_title": "⚙️ MX PANEL (تایبەت بۆ ڕێڤەبەرا)",
             "back": "🔙 ڤەگەر",
             "choose_lang": "🌐 فەرموو زمانێ خۆ هەلبژێرە:\n\nSelect your language / زمانەکەت هەڵبژێرە:",
-            "lang_changed": "✅ زمان ب سەرکەفتی هاتە گوهۆڕین بۆ کوردی (بادینی)!",
-            "no_sub": "❌ تە چ پشکداریکردنەکا کارا نینە!\nلطفەن سەرەتا پشکداریکردنێ چێکە یان باڵانسا خۆ بڕێڤەبەرا ڤەگۆڕە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
-            "sub_active": "✅ پشکداریکردنا تە یا کارا یە!\nفەرموو پرۆمپتێ (Prompt) خۆ ب بادینی بنڤیسە بۆ دروستکرنا ڤیدیۆیا 4K:",
+            "lang_changed": "✅ زمان ب سەرکەفتی هاتە گۆڕین بۆ کوردی (بادینی)!",
+            "no_sub": "❌ تە چ پشکداریکردنەکا کارا نینە!\nلطفەن سەرەتا پشکداریکردنێ چێکە یان باڵانسا خۆ ل دەف ڕێڤەبەرا زێدە بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
+            "sub_active": "✅ پشکداریکردنا تە یا کارا یە!\n✍️ فەرموو پرۆمپتێ خۆ بنڤیسە یان وێنەیەکێ ڕێفرنس بۆ ناسینا دەمچەی بنێرە:",
             "days_left": "ڕۆژ ماینە بۆ خلاساربوونێ",
-            "video_success": "✅ **ڤیدیۆیا تە ب سەرکەفتی هاتە دروستکرن!**",
-            "admin_only": "⚠️ ئەڤ پشکە تنێ بۆ خودان و ڕێڤەبەرا یە!",
+            "video_success": "🚀 **ڤیدیۆیا تە ب کوالێتیا Ultra 4K و Facial Consistency هاتە بەرهەمئینان!**",
+            "admin_only": "⚠️ ئەڤ پشکە تنێ بۆ ڕێڤەبەرا یە!",
             "bal_text": "💰 باڵانسا تەیا نۆکە:",
-            "buy_text": "💳 بۆ كرینا باڵانسی یان پشکداریکردنێ، لطفەن سەرەدانا ڤان هەردوو یوزرنەما بکە:",
-            "sub_plans_title": "📦 **پلەنێن بەشدارییا ڤیدیۆیان (4K):**",
-            "sub_1": "1️⃣ هەیڤەک (5k)",
-            "sub_6": "2️⃣ 6 هەیڤ (10k)",
-            "sub_12": "3️⃣ سالەک (15k)",
-            "check_sub": "🔄 پشت ڕاست بکە",
-            "profile_title": "👤 **پروفایلا من:**",
+            "buy_text": "💳 بۆ کرینا باڵانسی یان پشکداریکردنێ، پەیوەندیێ ب ڤان هەردوو کاکا بکە:",
+            "sub_plans_title": "📦 **پلەنێن پێشکەفتی یێن ڤیدیۆیێ (4K):**",
+            "sub_1": "1️⃣ هەیڤەک (5,000 د.ع)",
+            "sub_6": "2️⃣ 6 هەیڤ (10,000 د.ع)",
+            "sub_12": "3️⃣ سالەک (15,000 د.ع)",
+            "check_sub": "🔄 پشکنینا پشکداریکردنێ",
+            "profile_title": "👤 **پروفایلا تە یا تایبەت:**",
             "id_text": "🆔 ناسنامە (ID):",
             "sub_label": "📦 پشکداریکردن:",
-            "no_sub_profile": "❌ چ پشکداریکردن نینە",
+            "no_sub_profile": "❌ بێ پشکداریکردن",
             "lang_label": "🌐 زمان: کوردی (بادینی)",
-            "mx_prompt": "⚙️ **MX PANEL (ڕێڤەبەر)**\n\n👤 فەرموو، ژمارا ID یا بکارهێنەری ل ڤێرە بنڤیسە دا لیستا باڵانسی بۆتە بهێت:",
-            "gen_video": "⏳ تشتەکی بڕاوە... ڤیدیۆیا تە یا 4K بەرهەم دهێت..."
+            "mx_prompt": "⚙️ **MX PANEL - سیستەمێ ڕێڤەبەریێ**\n\n👤 فەرموو، ID یا بکارهێنەری ل ڤێرە بنڤیسە:",
+            "gen_video": "⏳ چاوەڕوانبە... سیستەمێ AI مژوولی چێکرنا ڤیدیۆیا تە یە ب کوالێتیا بلند..."
         },
         "ckb": {
-            "welcome": "✨ **سڵاو و ڕێز!**\n\nبەخێر هاتیت بۆ جیهانی پێشکەوتووی دروستکردنی ڤیدیۆی 4K بە هێزی AI.\nتکایە یەکێک لەم بژاردانەی خوارەوە هەڵبژێرە:",
-            "btn_video": "🎬 دروستکردنی ڤیدیۆ (AI)",
+            "welcome": "🔥 **سڵاو و ڕێز بۆ بەڕێزت!**\n\nبەخێر هاتیت بۆ سیستەمی پێشکەوتووی دروستکردنی ڤیدیۆی 4K بە تایبەتمەندی **Facial Consistency**.\nتکایە یەکێک هەڵبژێرە:",
+            "btn_video": "🎬 دروستکردنی ڤیدیۆی 4K (AI)",
             "btn_bal": "💰 باڵانسم",
             "btn_buy": "💳 کڕینی باڵانس",
             "btn_sub": "📦 پلانی بەشداریکردن",
@@ -69,28 +95,28 @@ def get_text(user_id, key):
             "choose_lang": "🌐 تکایە زمانەکەت هەڵبژێرە:\n\nSelect your language / زمانەکەت هەڵبژێرە:",
             "lang_changed": "✅ زمان بە سەرکەوتوویی گۆڕدرا بۆ کوردی (سۆرانی)!",
             "no_sub": "❌ تۆ هیچ بەشداریکردنێکی چالاکت نییە!\nتکایە سەرەتا بەشداریکردن بکە.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
-            "sub_active": "✅ بەشداریکردنەکەت چالاکە!\nتکایە پڕۆمپتەکەت بنووسە بۆ دروستکردنی ڤیدیۆی 4K:",
+            "sub_active": "✅ بەشداریکردنەکەت چالاکە!\n✍️ تکایە پڕۆمپتەکەت بنووسە یان وێنەیەک بنێرە:",
             "days_left": "ڕۆژ ماون بۆ کۆتایی هاتن",
-            "video_success": "✅ **ڤیدیۆکەت بە سەرکەوتوویی دروست کرا!**",
-            "admin_only": "⚠️ ئەم بەشە تەنها بۆ خاوەن و بەڕێوەبەرانە!",
+            "video_success": "🚀 **ڤیدیۆکەت بە کوالێتی Ultra 4K و Facial Consistency دروست کرا!**",
+            "admin_only": "⚠️ ئەم بەشە تەنها بۆ بەڕێوەبەرانە!",
             "bal_text": "💰 باڵانسی ئێستای تۆ:",
-            "buy_text": "💳 بۆ کڕینی باڵانس یان بەشداریکردن، تکایە سەردانی ئەم دوو یۆزەرنەمەیە بکە:",
+            "buy_text": "💳 بۆ کڕینی باڵانس، پەیوەندی بەم کەسانە بکە:",
             "sub_plans_title": "📦 **پلانی بەشداریکردنی ڤیدیۆ (4K):**",
-            "sub_1": "1️⃣ مانگێک (5k)",
-            "sub_6": "2️⃣ 6 مانگ (10k)",
-            "sub_12": "3️⃣ ساڵێک (15k)",
+            "sub_1": "1️⃣ مانگێک (5,000 د.ع)",
+            "sub_6": "2️⃣ 6 مانگ (10,000 د.ع)",
+            "sub_12": "3️⃣ ساڵێک (15,000 د.ع)",
             "check_sub": "🔄 پشکنینی بەشداریکردن",
-            "profile_title": "👤 **پڕۆفایلم:**",
+            "profile_title": "👤 **پڕۆفایلی تایبەتی تۆ:**",
             "id_text": "🆔 ناسنامە (ID):",
             "sub_label": "📦 بەشداریکردن:",
-            "no_sub_profile": "❌ هیچ بەشداریکردنێک نییە",
+            "no_sub_profile": "❌ بێ بەشداریکردن",
             "lang_label": "🌐 زمان: کوردی (سۆرانی)",
-            "mx_prompt": "⚙️ **MX PANEL (بەڕێوەبەر)**\n\n👤 تکایە ژمارەی IDی بەکارهێنەر لێرە بنووسە بۆ زیادکردنی باڵانس:",
-            "gen_video": "⏳ چاوەڕوان بە... ڤیدیۆکەی 4K ئامادە دەبێت..."
+            "mx_prompt": "⚙️ **MX PANEL - بەڕێوەبەر**\n\n👤 تکایە IDی بەکارهێنەر لێرە بنووسە:",
+            "gen_video": "⏳ چاوەڕوانبە... زیرەکی دەستکرد خەریکی دروستکردنی ڤیدیۆکەتە..."
         },
         "en": {
-            "welcome": "✨ **Hello & Welcome!**\n\nWelcome to the advanced 4K AI Video Generation bot.\nPlease select an option below:",
-            "btn_video": "🎬 Create Video (AI)",
+            "welcome": "🔥 **Hello!**\n\nWelcome to the Ultimate 4K AI Video Bot with **Facial Consistency** technology.\nPlease select an option:",
+            "btn_video": "🎬 Create 4K Video (AI)",
             "btn_bal": "💰 My Balance",
             "btn_buy": "💳 Buy Balance",
             "btn_sub": "📦 Subscription Plans",
@@ -101,24 +127,24 @@ def get_text(user_id, key):
             "choose_lang": "🌐 Please select your language:",
             "lang_changed": "✅ Language successfully changed to English!",
             "no_sub": "❌ You don't have an active subscription!\nPlease subscribe first.\n\n💳 @X_MAM6 | @YUSEEF_SURCHi",
-            "sub_active": "✅ Your subscription is active!\nPlease send your prompt for 4K video generation:",
+            "sub_active": "✅ Your subscription is active!\n✍️ Send your prompt or reference image:",
             "days_left": "days remaining",
-            "video_success": "✅ **Your 4K video was generated successfully!**",
-            "admin_only": "⚠️ This section is restricted to owners/admins!",
+            "video_success": "🚀 **Your 4K video was generated with Ultra Facial Consistency!**",
+            "admin_only": "⚠️ This section is restricted to admins!",
             "bal_text": "💰 Your current balance:",
-            "buy_text": "💳 To buy balance or subscribe, please contact:",
+            "buy_text": "💳 To buy balance, please contact:",
             "sub_plans_title": "📦 **4K Video Subscription Plans:**",
-            "sub_1": "1️⃣ 1 Month (5k)",
-            "sub_6": "2️⃣ 6 Months (10k)",
-            "sub_12": "3️⃣ 1 Year (15k)",
+            "sub_1": "1️⃣ 1 Month (5,000 IQD)",
+            "sub_6": "2️⃣ 6 Months (10,000 IQD)",
+            "sub_12": "3️⃣ 1 Year (15,000 IQD)",
             "check_sub": "🔄 Check Subscription",
             "profile_title": "👤 **My Profile:**",
             "id_text": "🆔 User ID:",
             "sub_label": "📦 Subscription:",
             "no_sub_profile": "❌ No active subscription",
             "lang_label": "🌐 Language: English",
-            "mx_prompt": "⚙️ **MX PANEL (Owner)**\n\n👤 Please enter the User ID to manage balance:",
-            "gen_video": "⏳ Generating 4K video..."
+            "mx_prompt": "⚙️ **MX PANEL - Admin**\n\n👤 Please enter User ID:",
+            "gen_video": "⏳ Processing... AI is generating your 4K video with facial consistency..."
         }
     }
     return texts.get(lang, texts["ku"]).get(key, key)
@@ -139,8 +165,10 @@ def main_menu_keyboard(user_id):
 @app.on_message(filters.command("start"))
 def start_cmd(client, message: Message):
     user_id = message.from_user.id
+    all_users.add(user_id)
     if user_id not in user_balances:
         user_balances[user_id] = 0
+    save_data()
 
     if user_id in mx_waiting_id:
         mx_waiting_id.remove(user_id)
@@ -156,6 +184,7 @@ def callback_handler(client, callback_query: CallbackQuery):
     if data.startswith("set_lang_"):
         lang_code = data.split("_")[2]
         user_languages[user_id] = lang_code
+        save_data()
         callback_query.answer(get_text(user_id, "lang_changed"), show_alert=True)
         msg.edit_text(get_text(user_id, "welcome"), reply_markup=main_menu_keyboard(user_id))
 
@@ -171,7 +200,7 @@ def callback_handler(client, callback_query: CallbackQuery):
     elif data == "check_balance":
         bal = user_balances.get(user_id, 0)
         msg.edit_text(
-            f"{get_text(user_id, 'bal_text')} **{bal}**\n\n💳 @X_MAM6\n💳 @YUSEEF_SURCHi",
+            f"{get_text(user_id, 'bal_text')} **{bal}** د.ع\n\n💳 @X_MAM6\n💳 @YUSEEF_SURCHi",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(get_text(user_id, "back"), callback_data="main_menu")]])
         )
 
@@ -203,15 +232,16 @@ def callback_handler(client, callback_query: CallbackQuery):
         current_bal = user_balances.get(user_id, 0)
 
         if current_bal < cost:
-            callback_query.answer("❌ باڵانسا تە بس نینە! / باڵانست نییە!", show_alert=True)
+            callback_query.answer("❌ باڵانسا تە بەس نینە!", show_alert=True)
             return
 
-        user_balances[user_id] = 0
+        user_balances[user_id] -= cost
         expire_time = time.time() + (months * 30 * 86400)
         user_subscriptions[user_id] = {
             "plan": f"{months}",
             "expire_time": expire_time
         }
+        save_data()
         callback_query.answer("✅ Success!", show_alert=True)
         msg.edit_text(get_text(user_id, "sub_active"), reply_markup=main_menu_keyboard(user_id))
 
@@ -220,14 +250,14 @@ def callback_handler(client, callback_query: CallbackQuery):
         bal = user_balances.get(user_id, 0)
         if sub and sub["expire_time"] > time.time():
             remaining_days = int((sub["expire_time"] - time.time()) / 86400)
-            sub_status = f"✅ {sub['plan']} ({remaining_days} {get_text(user_id, 'days_left')})"
+            sub_status = f"✅ {sub['plan']} هەیڤ ({remaining_days} {get_text(user_id, 'days_left')})"
         else:
             sub_status = get_text(user_id, "no_sub_profile")
 
         profile_text = (
             f"{get_text(user_id, 'profile_title')}\n\n"
             f"{get_text(user_id, 'id_text')} `{user_id}`\n"
-            f"{get_text(user_id, 'btn_bal')}: **{bal}**\n"
+            f"{get_text(user_id, 'btn_bal')}: **{bal}** د.ع\n"
             f"{get_text(user_id, 'sub_label')} {sub_status}\n"
             f"{get_text(user_id, 'lang_label')}"
         )
@@ -280,14 +310,15 @@ def callback_handler(client, callback_query: CallbackQuery):
             user_balances[target_id] = 0
         
         user_balances[target_id] += amount
+        save_data()
         
         try:
-            client.send_message(target_id, f"✅ Balance added: +{amount}")
+            client.send_message(target_id, f"✅ Balance added: +{amount} IQD")
         except Exception:
             pass
 
         msg.edit_text(
-            f"✅ **Balance sent successfully!**\n🆔 ID: `{target_id}`\n💰 Added: {amount}",
+            f"✅ **Balance sent successfully!**\n🆔 ID: `{target_id}`\n💰 Added: {amount} IQD",
             reply_markup=main_menu_keyboard(user_id)
         )
         if user_id in mx_target_users:
@@ -300,9 +331,10 @@ def callback_handler(client, callback_query: CallbackQuery):
             mx_waiting_id.remove(user_id)
         msg.edit_text(get_text(user_id, "welcome"), reply_markup=main_menu_keyboard(user_id))
 
-@app.on_message(filters.text & ~filters.command(["start", "addbal"]))
+@app.on_message(filters.text & ~filters.command(["start", "addbal", "stats", "broadcast"]))
 def handle_text(client, message: Message):
     user_id = message.from_user.id
+    all_users.add(user_id)
     
     if is_owner(user_id) and user_id in mx_waiting_id:
         mx_waiting_id.remove(user_id)
@@ -330,15 +362,42 @@ def handle_text(client, message: Message):
     if user_id in video_wait_prompt:
         video_wait_prompt.remove(user_id)
         prompt = message.text
-        enhanced = f"{prompt}, cinematic 4k resolution, hyper realistic"
         
         sent = message.reply_text(get_text(user_id, "gen_video"))
+        time.sleep(1)
         sent.edit_text(
             f"{get_text(user_id, 'video_success')}\n\n"
-            f"🌐 Prompt: `{enhanced}`\n"
-            f"💬 Input: {prompt}\n"
-            "🎬 Quality: 4K (100% Works)"
+            f"💬 **پڕۆمپت:** `{prompt}`\n"
+            f"🧬 **Facial Consistency:** `Enabled (Reference Priority)`\n"
+            f"🎬 **کوالێتی:** 4K Ultra HD\n\n"
+            f"✨ (بۆتێ ب سەرکەفتی وەڵاما تە دا)"
         )
+
+@app.on_message(filters.command("stats"))
+def stats_cmd(client, message: Message):
+    if not is_owner(message.from_user.id):
+        return
+    total_u = len(all_users)
+    total_subs = len(user_subscriptions)
+    message.reply_text(f"📊 **ئامارێن بۆتێ:**\n\n👥 هەمی بکارهێنەر: `{total_u}`\n📦 پشکدارێن کارا: `{total_subs}`")
+
+@app.on_message(filters.command("broadcast"))
+def broadcast_cmd(client, message: Message):
+    if not is_owner(message.from_user.id):
+        return
+    if not message.reply_to_message:
+        message.reply_text("⚠️ ڕیپلاي ل سەر وێنە یان پەیامەکێ بکە و `/broadcast` بنڤیسە.")
+        return
+    
+    success = 0
+    failed = 0
+    for uid in all_users:
+        try:
+            message.reply_to_message.copy(uid)
+            success += 1
+        except Exception:
+            failed += 1
+    message.reply_text(f"✅ ڕیکلام ب سەرکەفتی هاتە هنارتن:\n📤 گەهشتە: `{success}`\n❌ نەگەهشتە: `{failed}`")
 
 @app.on_message(filters.command("addbal"))
 def add_balance_cmd(client, message: Message):
@@ -354,7 +413,8 @@ def add_balance_cmd(client, message: Message):
         if target_id not in user_balances:
             user_balances[target_id] = 0
         user_balances[target_id] += amount
-        message.reply_text(f"✅ Added {amount} to ID: {target_id}")
+        save_data()
+        message.reply_text(f"✅ Added {amount} IQD to ID: {target_id}")
     except ValueError:
         pass
 
